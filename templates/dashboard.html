@@ -1,216 +1,367 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>kaching</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: left;
-            margin-bottom: 30px;
-        }
-        
-        .stats-container {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-        }
-        
-        .stat-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 200px;
-        }
-        
-        .chart-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        
-        .refresh-button {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        
-        .refresh-button:hover {
-            background-color: #0056b3;
-        }
-        
-        .stat-box.credit {
-            border-left: 4px solid #28a745;
-        }
-        
-        .stat-box.debit {
-            border-left: 4px solid #dc3545;
-        }
-        
-        .credit-amount {
-            color: #28a745;
-            font-weight: bold;
-        }
-        
-        .debit-amount {
-            color: #dc3545;
-            font-weight: bold;
-        }
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .header {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+      }
+
+      .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-box {
+        background-color: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+      }
+
+      .stat-box:hover {
+        transform: translateY(-5px);
+      }
+
+      .chart-container {
+        background-color: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+      }
+
+      .refresh-button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+      }
+
+      .refresh-button:hover {
+        background-color: #0b5ed7;
+      }
+
+      .stat-box.credit { border-left: 4px solid #198754; }
+      .stat-box.debit { border-left: 4px solid #dc3545; }
+
+      .credit-amount { color: #198754; font-weight: 500; }
+      .debit-amount { color: #dc3545; font-weight: 500; }
+
+      h1 {
+        font-weight: 700;
+        color: #212529;
+        margin: 0;
+      }
+
+      h2 { font-size: 1.75rem; font-weight: 500; }
+      h3 { font-size: 1rem; color: #6c757d; margin-bottom: 10px; }
+
+      .filter-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .form-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6c757d;
+      }
+
+      .collapse {
+        transition: all 0.2s ease;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="dashboard-container">
-        <div class="header">
-            <h1>kaching</h1>
+      <div class="header">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h1>kaching</h1>
+          <div class="filter-container">
+            <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterSection">
+              <i class="fas fa-filter"></i> Filters
+            </button>
+          </div>
         </div>
         
-        <div class="stats-container">
-			<div class="stat-box">
-				<h3>Total Transactions</h3>
-				<h2 id="total-transactions">Loading...</h2>
-			</div>
-			<div class="stat-box credit">
-				<h3>Total Credits</h3>
-				<h2 id="total-credits">Loading...</h2>
-			</div>
-			<div class="stat-box debit">
-				<h3>Total Debits</h3>
-				<h2 id="total-debits">Loading...</h2>
-			</div>
-		</div>
-        
-        <div class="chart-container">
-            <div id="daily-transactions"></div>
+        <div class="collapse mb-3" id="filterSection">
+          <div class="card card-body">
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Date Range</label>
+                <input type="date" class="form-control" id="startDate">
+                <input type="date" class="form-control mt-2" id="endDate">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Amount Range</label>
+                <input type="number" class="form-control" id="minAmount" placeholder="Min">
+                <input type="number" class="form-control mt-2" id="maxAmount" placeholder="Max">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Categories</label>
+                <select class="form-select" id="categoryFilter" multiple>
+                  <!-- Will be populated dynamically -->
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Transaction Type</label>
+                <select class="form-select" id="typeFilter">
+                  <option value="all">All</option>
+                  <option value="credit">Credits</option>
+                  <option value="debit">Debits</option>
+                </select>
+              </div>
+            </div>
+            <div class="text-end mt-3">
+              <button class="btn btn-secondary me-2" onclick="resetFilters()">Reset</button>
+              <button class="btn btn-primary" onclick="applyFilters()">Apply</button>
+            </div>
+          </div>
         </div>
-        
-        <div class="chart-container">
-            <div id="amount-distribution"></div>
+      </div>
+
+      <div class="stats-container">
+        <div class="stat-box">
+          <h3>Total Transactions</h3>
+          <h2 id="total-transactions">Loading...</h2>
         </div>
-        
-        <div class="chart-container">
-            <div id="transaction-timeline"></div>
+        <div class="stat-box credit">
+          <h3>Total Credits</h3>
+          <h2 id="total-credits">Loading...</h2>
         </div>
-        
-        <button class="refresh-button" onclick="refreshData()">Refresh Data</button>
+        <div class="stat-box debit">
+          <h3>Total Debits</h3>
+          <h2 id="total-debits">Loading...</h2>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <div id="daily-transactions"></div>
+      </div>
+
+      <div class="chart-container">
+        <div id="amount-distribution"></div>
+      </div>
+
+      <div class="chart-container">
+        <div id="transaction-timeline"></div>
+      </div>
+
+      <div class="chart-container">
+        <div id="category-summary"></div>
+      </div>
+
+      <button class="refresh-button" onclick="refreshData()">
+        Refresh Data
+      </button>
     </div>
 
     <script>
-        function updateDashboard(data) {
-            // Update statistics
-            document.getElementById('total-transactions').textContent = data.total_transactions;
-            document.getElementById('total-credits').textContent = `$${Math.abs(data.total_credits).toLocaleString()}`;
-            document.getElementById('total-debits').textContent = `$${data.total_debits.toLocaleString()}`;
-            
-            // Daily Transactions Chart
-            Plotly.newPlot('daily-transactions', [
-                {
-                    x: data.daily_dates,
-                    y: data.daily_credits,
-                    type: 'bar',
-                    name: 'Credits',
-                    marker: { color: '#28a745' }
-                },
-                {
-                    x: data.daily_dates,
-                    y: data.daily_debits,
-                    type: 'bar',
-                    name: 'Debits',
-                    marker: { color: '#dc3545' }
-                }
-            ], {
-                title: 'Daily Transaction Count',
-                xaxis: { 
-                    title: 'Date',
-                    type: 'date',
-                    tickformat: '%Y-%m-%d',
-                    tickangle: 45
-                },
-                yaxis: { title: 'Number of Transactions' },
-                barmode: 'group'
-            });
-            
-            // Amount Distribution
-            Plotly.newPlot('amount-distribution', [
-                {
-                    x: data.credit_amounts,
-                    type: 'histogram',
-                    name: 'Credits',
-                    marker: { color: '#28a745' }
-                },
-                {
-                    x: data.debit_amounts,
-                    type: 'histogram',
-                    name: 'Debits',
-                    marker: { color: '#dc3545' }
-                }
-            ], {
-                title: 'Transaction Amount Distribution',
-                xaxis: { title: 'Amount ($)' },
-                yaxis: { title: 'Frequency' },
-                barmode: 'overlay',
-                opacity: 0.7
-            });
-            
-            // Transaction Timeline
-            Plotly.newPlot('transaction-timeline', [{
-                x: data.dates,
-                y: data.amounts,
-                mode: 'markers',
-                type: 'scatter',
-                text: data.descriptions,
-                marker: {
-                    color: data.amounts.map(amount => amount < 0 ? '#28a745' : '#dc3545'),
-                    size: 8
-                },
-                hovertemplate: 
-                    '<b>%{text}</b><br>' +
-                    '<b>Amount:</b> $%{y:.2f}<br>' +
-                    '<b>Date:</b> %{x}<br>'
-            }], {
-                title: 'Transaction Timeline',
-                xaxis: { 
-                    title: 'Date',
-                    type: 'date',
-                    tickformat: '%Y-%m-%d',
-                    tickangle: 45
-                },
-                yaxis: { title: 'Amount ($)' },
-                showlegend: false
-            });
-        }
+      function updateDashboard(data) {
+        // Update statistics
+        document.getElementById("total-transactions").textContent =
+          data.total_transactions;
+        document.getElementById("total-credits").textContent = `$${Math.abs(
+          data.total_credits
+        ).toLocaleString()}`;
+        document.getElementById(
+          "total-debits"
+        ).textContent = `$${data.total_debits.toLocaleString()}`;
 
-        function refreshData() {
-            fetch('/api/transactions')
-                .then(response => response.json())
-                .then(data => updateDashboard(data))
-                .catch(error => console.error('Error:', error));
-        }
+        const plotlyConfig = {
+          template: 'plotly_white',
+          margin: { t: 30, b: 30, l: 40, r: 20 },
+          font: { family: 'Roboto' }
+        };
 
-        // Initial load
-        refreshData();
+        // Update all chart layouts to use the config
+        Plotly.newPlot("daily-transactions", [
+          {
+            x: data.daily_dates,
+            y: data.daily_credits,
+            type: "bar",
+            name: "Credits",
+            marker: { color: "#198754", opacity: 0.8 },
+          },
+          {
+            x: data.daily_dates,
+            y: data.daily_debits,
+            type: "bar",
+            name: "Debits",
+            marker: { color: "#dc3545", opacity: 0.8 },
+          },
+        ],
+        {
+          ...plotlyConfig,
+          title: "Daily Transaction Count",
+          xaxis: {
+            title: "Date",
+            type: "date",
+            tickformat: "%Y-%m-%d",
+            tickangle: 45,
+          },
+          yaxis: { title: "Number of Transactions" },
+          barmode: "group",
+        });
+
+        // Amount Distribution
+        Plotly.newPlot(
+          "amount-distribution",
+          [
+            {
+              x: data.credit_amounts,
+              type: "histogram",
+              name: "Credits",
+              marker: { color: "#28a745" },
+            },
+            {
+              x: data.debit_amounts,
+              type: "histogram",
+              name: "Debits",
+              marker: { color: "#dc3545" },
+            },
+          ],
+          {
+            title: "Transaction Amount Distribution",
+            xaxis: { title: "Amount ($)" },
+            yaxis: { title: "Frequency" },
+            barmode: "overlay",
+            opacity: 0.7,
+          }
+        );
+
+        // Category Summary Pie Chart
+        const categoryData = {
+          values: [],
+          labels: [],
+          type: "pie",
+          hole: 0.4,
+          textposition: 'inside',
+          textinfo: 'percent+label',
+          marker: {
+            colors: [
+              "#4CAF50",
+              "#2196F3",
+              "#FF9800",
+              "#F44336",
+              "#9C27B0",
+              "#00BCD4",
+              "#FFEB3B",
+              "#795548",
+            ],
+          },
+        };
+
+        let uncategorizedTotal = 0;
+        // Only include positive totals in the pie chart, excluding Uncategorized
+        Object.entries(data.category_summary).forEach(([category, total]) => {
+          if (total > 0) {
+            if (category === 'Uncategorized') {
+              uncategorizedTotal = total;
+            } else {
+              categoryData.labels.push(category);
+              categoryData.values.push(total);
+            }
+          }
+        });
+
+        const layout = {
+          title: "Spending by Category",
+          showlegend: false,
+          hoverinfo: 'label+percent+value',
+          annotations: [{
+            text: `Uncategorized Spending: $${uncategorizedTotal.toLocaleString()}`,
+            showarrow: false,
+            x: 0.5,
+            y: -0.2,
+            font: {
+              size: 14
+            }
+          }]
+        };
+
+        Plotly.newPlot("category-summary", [categoryData], layout);
+
+        // Update Transaction Timeline to include categories
+        Plotly.newPlot(
+          "transaction-timeline",
+          [
+            {
+              x: data.dates,
+              y: data.amounts,
+              mode: "markers",
+              type: "scatter",
+              text: data.descriptions,
+              customdata: data.categories, // Add categories as custom data
+              marker: {
+                color: data.amounts.map((amount) =>
+                  amount < 0 ? "#28a745" : "#dc3545"
+                ),
+                size: 8,
+              },
+              hovertemplate:
+                "<b>%{text}</b><br>" +
+                "<b>Amount:</b> $%{y:.2f}<br>" +
+                "<b>Date:</b> %{x}<br>" +
+                "<b>Category:</b> %{customdata}<br>",
+            },
+          ],
+          {
+            title: "Transaction Timeline",
+            xaxis: {
+              title: "Date",
+              type: "date",
+              tickformat: "%Y-%m-%d",
+              tickangle: 45,
+            },
+            yaxis: { title: "Amount ($)" },
+            showlegend: false,
+          }
+        );
+      }
+
+      function refreshData() {
+        fetch("/api/transactions")
+          .then((response) => response.json())
+          .then((data) => updateDashboard(data))
+          .catch((error) => console.error("Error:", error));
+      }
+
+      // Initial load
+      refreshData();
     </script>
-</body>
+  </body>
 </html>
