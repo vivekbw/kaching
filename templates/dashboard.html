@@ -139,8 +139,8 @@
                 <label class="form-label">Transaction Type</label>
                 <select class="form-select" id="typeFilter">
                   <option value="all">All</option>
-                  <option value="credit">Credits</option>
-                  <option value="debit">Debits</option>
+                  <option value="credit">Deposits</option>
+                  <option value="debit">Expenses</option>
                 </select>
               </div>
             </div>
@@ -158,11 +158,11 @@
           <h2 id="total-transactions">Loading...</h2>
         </div>
         <div class="stat-box credit">
-          <h3>Total Credits</h3>
+          <h3>Total Deposits</h3>
           <h2 id="total-credits">Loading...</h2>
         </div>
         <div class="stat-box debit">
-          <h3>Total Debits</h3>
+          <h3>Total Expenses</h3>
           <h2 id="total-debits">Loading...</h2>
         </div>
       </div>
@@ -350,14 +350,14 @@
             x: data.daily_dates,
             y: data.daily_credits,
             type: "bar",
-            name: "Credits",
+            name: "Deposits",
             marker: { color: "#198754", opacity: 0.8 },
           },
           {
             x: data.daily_dates,
             y: data.daily_debits,
             type: "bar",
-            name: "Debits",
+            name: "Expenses",
             marker: { color: "#dc3545", opacity: 0.8 },
           },
         ],
@@ -381,13 +381,13 @@
             {
               x: data.credit_amounts,
               type: "histogram",
-              name: "Credits",
+              name: "Deposits",
               marker: { color: "#28a745" },
             },
             {
               x: data.debit_amounts,
               type: "histogram",
-              name: "Debits",
+              name: "Expenses",
               marker: { color: "#dc3545" },
             },
           ],
