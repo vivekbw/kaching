@@ -1,0 +1,11 @@
+{
+  "foundryUrl": "https://vivek.usw-18.palantirfoundry.com",
+  "site": {
+    "application": "ri.third-party-applications.main.application.31fe7836-1d79-4517-b0e9-4a21eb22e4bc",
+    "directory": "./out",
+    "autoVersion": {
+      "type": "git-describe",
+      "tagPrefix": ""
+    }
+  }
+}
