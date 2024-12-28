@@ -140,7 +140,7 @@
                 <select class="form-select" id="typeFilter">
                   <option value="all">All</option>
                   <option value="credit">Deposits</option>
-                  <option value="debit">Withdrawals</option>
+                  <option value="debit">Expenses</option>
                 </select>
               </div>
             </div>
@@ -162,7 +162,7 @@
           <h2 id="total-credits">Loading...</h2>
         </div>
         <div class="stat-box debit">
-          <h3>Total Withdrawals</h3>
+          <h3>Total Expenses</h3>
           <h2 id="total-debits">Loading...</h2>
         </div>
       </div>
@@ -357,7 +357,7 @@
             x: data.daily_dates,
             y: data.daily_debits,
             type: "bar",
-            name: "Withdrawals",
+            name: "Expenses",
             marker: { color: "#dc3545", opacity: 0.8 },
           },
         ],
@@ -387,7 +387,7 @@
             {
               x: data.debit_amounts,
               type: "histogram",
-              name: "Withdrawals",
+              name: "Expenses",
               marker: { color: "#dc3545" },
             },
           ],
