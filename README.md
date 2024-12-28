@@ -1,4 +1,7 @@
-# kachingv2
+# kaching
+
+<img width="930" alt="image" src="https://github.com/user-attachments/assets/b46e8314-4d9b-4ab7-95d1-2935154ab7fc" />
+
 
 This project was generated with [`@osdk/create-app`](https://www.npmjs.com/package/@osdk/create-app) and demonstrates using the Ontology SDK package `@kaching/sdk` with React on top of Next.js. Check out the [Next.js](https://nextjs.org/docs) docs for further configuration.
 
