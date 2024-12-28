@@ -1,18 +1,19 @@
 "use client";
-import { Theme, Flex } from "@radix-ui/themes";
+import { Theme, Flex, Button } from "@radix-ui/themes";
 import { Header } from "@/components/layout/Header";
 import { MetricCard } from "@/components/layout/MetricCard";
 import { getClient } from "@/lib/client";
 import { $Objects } from "@kaching/sdk";
 import { useEffect, useState } from "react";
 import useAuthenticated from "@/lib/useAuthenticated";
-import { BarChartIcon, ArrowUpIcon, ArrowDownIcon } from "@radix-ui/react-icons";
+import { BarChartIcon, ArrowUpIcon, ArrowDownIcon, UploadIcon } from "@radix-ui/react-icons";
 import { TransactionChart } from "@/components/layout/TransactionChart";
+import { CategoryTreemap } from "@/components/layout/CategoryTreemap";
 
 const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(amount);
 };
 
@@ -33,9 +34,11 @@ export default function Home() {
 
       const client = getClient();
       const transactions = [];
-      
+
       try {
-        for await (const transaction of client($Objects.Transaction).asyncIter()) {
+        for await (const transaction of client(
+          $Objects.Transaction
+        ).asyncIter()) {
           transactions.push(transaction);
         }
 
@@ -74,7 +77,24 @@ export default function Home() {
     <Theme>
       <Header />
       <main className="pt-20 px-4 max-w-7xl mx-auto">
-        <Flex gap="4" justify="center">
+		{/* Upload Documents Link */}
+        <Flex justify="between" align="center" className="py-4 px-4">
+          <Flex gap="4">
+            <Button
+              onClick={() =>
+                window.open(
+                  "https://vivek.usw-18.palantirfoundry.com/workspace/module/view/latest/ri.workshop.main.module.39d5ca71-4863-4cfe-8eb2-036312131bcd",
+                  "_blank"
+                )
+              }
+              className="bg-white text-black hover:bg-gray-100 transition-colors"
+			  style={{transition: "transform 0.2s ease-in-out", boxShadow: "0.2s ease-in-out"}}>
+              <UploadIcon />
+              Upload Transactions
+            </Button>
+          </Flex>
+        </Flex>
+        <Flex gap="4" justify="center" style={{ marginTop: "8px"}}>
           <MetricCard
             title="Total Transactions"
             value={metrics.totalTransactions}
@@ -97,14 +117,23 @@ export default function Home() {
             isLoading={isLoading}
           />
         </Flex>
-        <TransactionChart 
-          transactions={transactions.map(t => ({
+        <TransactionChart
+          transactions={transactions.map((t) => ({
             date: t.date,
             amount: t.amount,
             description: t.description,
-            category: t.category
+            category: t.category,
           }))}
-          isLoading={isLoading} 
+          isLoading={isLoading}
+        />
+        <CategoryTreemap
+          transactions={transactions.map((t) => ({
+            date: t.date,
+            amount: t.amount,
+            description: t.description,
+            category: t.category,
+          }))}
+          isLoading={isLoading}
         />
       </main>
     </Theme>

@@ -1,7 +1,7 @@
 "use client";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import { Theme } from "@radix-ui/themes";
-import { ExitIcon, PlusIcon } from "@radix-ui/react-icons";
+import { Theme, Button, Flex } from "@radix-ui/themes";
+import { ExitIcon, PlusIcon, UploadIcon } from "@radix-ui/react-icons";
 import { BiDollar } from "react-icons/bi";
 import { getAuth } from "@/lib/client";
 import { useRouter } from "next/navigation";
@@ -9,10 +9,10 @@ import "./styles.css";
 
 export function Header() {
   const router = useRouter();
-  
+
   const handleLogout = async () => {
     await getAuth().signOut();
-    router.push('/login');
+    router.push("/login");
   };
 
   return (

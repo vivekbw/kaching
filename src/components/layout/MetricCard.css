@@ -4,5 +4,16 @@
 
 .metric-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 20px -10px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card.total-transactions:hover {
+  box-shadow: 0 12px 20px -10px rgba(0, 0, 255, 0.2);
+}
+
+.metric-card.total-expenses:hover {
+  box-shadow: 0 12px 20px -10px rgba(255, 0, 0, 0.2);
+}
+
+.metric-card.total-deposits:hover {
+  box-shadow: 0 12px 20px -10px rgba(0, 255, 0, 0.2);
 } 

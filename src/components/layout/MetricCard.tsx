@@ -13,7 +13,7 @@ interface MetricCardProps {
 
 export function MetricCard({ title, value, icon, iconColor, isLoading = false }: MetricCardProps) {
   return (
-    <Card size="3" className="metric-card" style={{ width: "300px" }}>
+    <Card size="3" className="metric-card" style={{ width: "400px" }}>
       <Flex justify="between" align="center">
         <Box>
           {icon && (
