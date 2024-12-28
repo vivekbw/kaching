@@ -1,9 +1,11 @@
 import os
 from kaching_sdk import FoundryClient
-from foundry_sdk_runtime.auth import UserTokenAuth
+from kaching_sdk.core.api import UserTokenAuth
 from flask import Flask, render_template, jsonify
 import pandas as pd
 from kaching_sdk.ontology.objects import Transaction
+
+print(f"Using kaching_sdk version: {kaching_version}")
 
 app = Flask(__name__)
 
@@ -18,97 +20,68 @@ client = FoundryClient(
     hostname="https://vivek.usw-18.palantirfoundry.com"
 )
 
+print(auth)
+
 @app.route('/')
 def dashboard():
     return render_template('dashboard.html')
 
-
 @app.route('/api/transactions')
 def get_transactions():
     TransactionObject = client.ontology.objects.Transaction
-    # Store all transactions in a list first
     transaction_list = list(TransactionObject.iterate())
+
+    print("\n=== Transaction Object Properties ===")
+    print(dir(TransactionObject))
+
+    print("ACTIONS: ", client.ontology.actions.create_transaction)
+
+    print("\n=== Individual Transaction Properties ===")
+    for transaction in transaction_list[:10]:
+        print("\nTransaction:", transaction)
+        print("Available attributes:", dir(transaction))
+        print("Date:", transaction.date_)
+        print("Amount:", transaction.amount)
+        print("Description:", transaction.description)
+        print("Transaction Number:", transaction.transaction_number)
+        print("Category:", getattr(transaction,
+              'category', 'No category attribute'))
+        print("All properties:", transaction.__dict__)
+        print("-" * 50)
 
     data = []
     for transaction in transaction_list:
+        print(transaction)
         data.append({
             'date': transaction.date_,
             'amount': float(transaction.amount),
             'description': transaction.description,
-            'transaction_number': transaction.transaction_number
+            'transaction_number': transaction.transaction_number,
+            # Safely get category
+            'category': getattr(transaction, 'category', None)
         })
 
     df = pd.DataFrame(data)
     df['date'] = pd.to_datetime(df['date'])
     df = df.sort_values('date')
 
-    # print(transaction_list)
+    # Separate deposits and withdrawals
+    deposits_df = df[df['amount'] < 0]
+    withdrawals_df = df[df['amount'] >= 0]
 
-    # print(transaction_list)
-
-    # Get categories for transactions
-    try:
-        print("Creating transaction set...")
-        categories = client.ontology.queries.transaction_categorization(
-            transactions=TransactionObject
-        )
-        print(f"Categories received successfully.")
-
-        # Add categories to dataframe
-        df['category'] = 'Uncategorized'  # Default value
-
-        # Parse the JSON string into a dictionary if it's a string
-        if isinstance(categories, str):
-            import json
-            categories = json.loads(categories)
-
-        if isinstance(categories, dict):
-            # Create a mapping of transaction numbers to their categories
-            transaction_to_category = {}
-            category_totals = {}
-
-            for category, data in categories.items():
-                category_totals[category] = data['total']
-                for transaction in data['transactions']:
-                    transaction_to_category[transaction['transaction_number']] = category
-
-            # Add categories to dataframe by mapping transaction numbers
-            df['category'] = df.apply(
-                lambda row: transaction_to_category.get(
-                    row['transaction_number'], 'Uncategorized'),
-                axis=1
-            )
-
-            # Update category summary to use the new totals
-            category_summary = category_totals
-        else:
-            print(f"Unexpected categories format: {type(categories)}")
-
-    except Exception as e:
-        print(f"Error getting categories: {e}")
-        print(f"Error type: {type(e)}")
-        print(f"Error details: {str(e)}")
-        import traceback
-        print(f"Full traceback: {traceback.format_exc()}")
-        df['category'] = 'Uncategorized'
-
-    # Separate credits and debits
-    credits_df = df[df['amount'] < 0]
-    debits_df = df[df['amount'] >= 0]
-
-    # Get category summaries for debits (spending)
-    category_summary = debits_df.groupby(
+    # Get category summaries for withdrawals (spending)
+    category_summary = withdrawals_df.groupby(
         'category')['amount'].sum().apply(float).to_dict()
 
     return jsonify({
         'total_transactions': int(len(df)),
-        'total_credits': float(credits_df['amount'].sum()),
-        'total_debits': float(debits_df['amount'].sum()),
+        'total_deposits': float(deposits_df['amount'].sum()),
+        'total_withdrawals': float(withdrawals_df['amount'].sum()),
         'daily_dates': [d.strftime('%Y-%m-%d') for d in df['date'].unique()],
-        'daily_credits': [int(credits_df[credits_df['date'] == d].shape[0]) for d in df['date'].unique()],
-        'daily_debits': [int(debits_df[debits_df['date'] == d].shape[0]) for d in df['date'].unique()],
-        'credit_amounts': [float(x) for x in credits_df['amount'].tolist()],
-        'debit_amounts': [float(x) for x in debits_df['amount'].tolist()],
+        'daily_deposits': [int(deposits_df[deposits_df['date'] == d].shape[0]) for d in df['date'].unique()],
+        'daily_withdrawals': [int(withdrawals_df[withdrawals_df['date'] == d].shape[0]) for d in df['date'].unique()],
+        'deposit_amounts': [float(x) for x in deposits_df['amount'].tolist()],
+        'withdrawal_amounts': [float(x) for x in withdrawals_df['amount'].tolist()],
         'amounts': [float(x) for x in df['amount'].tolist()],
         'dates': df['date'].dt.strftime('%Y-%m-%d').tolist(),
         'descriptions': df['description'].tolist(),
