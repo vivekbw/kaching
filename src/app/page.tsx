@@ -1,14 +1,22 @@
 "use client";
-import { Theme, Flex, Button } from "@radix-ui/themes";
+import { Theme, Flex } from "@radix-ui/themes";
+import { useCallback, useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { MetricCard } from "@/components/layout/MetricCard";
+import { TabNavigation } from "@/components/layout/TabNavigation";
+import { TransactionChart } from "@/components/layout/TransactionChart";
+import { SearchModal } from "@/components/layout/SearchModal";
+import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
 import { getClient } from "@/lib/client";
 import { $Objects } from "@kaching/sdk";
-import { useEffect, useState } from "react";
 import useAuthenticated from "@/lib/useAuthenticated";
-import { BarChartIcon, ArrowUpIcon, ArrowDownIcon, UploadIcon } from "@radix-ui/react-icons";
-import { TransactionChart } from "@/components/layout/TransactionChart";
+import {
+  BarChartIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+} from "@radix-ui/react-icons";
 import { CategoryTreemap } from "@/components/layout/CategoryTreemap";
+import { Watermark } from "@/components/layout/Watermark";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
@@ -19,6 +27,7 @@ const formatCurrency = (amount: number): string => {
 
 export default function Home() {
   const authenticated = useAuthenticated();
+  const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     totalTransactions: 0,
@@ -26,75 +35,108 @@ export default function Home() {
     totalDeposits: 0,
   });
   const [transactions, setTransactions] = useState([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
+  const fetchMetrics = useCallback(async () => {
+    if (!authenticated) return;
+    setIsLoading(true);
+
+    const client = getClient();
+    const transactions = [];
+
+    try {
+      for await (const transaction of client(
+        $Objects.Transaction
+      ).asyncIter()) {
+        transactions.push(transaction);
+      }
+
+      const totals = transactions.reduce(
+        (acc, transaction) => {
+          const amount = Number(transaction.amount) || 0;
+          if (amount < 0) {
+            acc.totalExpenses += Math.abs(amount);
+          } else {
+            acc.totalDeposits += amount;
+          }
+          return acc;
+        },
+        { totalExpenses: 0, totalDeposits: 0 }
+      );
+
+      setMetrics({
+        totalTransactions: transactions.length,
+        totalExpenses: totals.totalExpenses,
+        totalDeposits: totals.totalDeposits,
+      });
+      setTransactions(transactions);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [authenticated]);
 
   useEffect(() => {
-    async function fetchMetrics() {
-      if (!authenticated) return;
-      setIsLoading(true);
-
-      const client = getClient();
-      const transactions = [];
-
-      try {
-        for await (const transaction of client(
-          $Objects.Transaction
-        ).asyncIter()) {
-          transactions.push(transaction);
-        }
-
-        const totals = transactions.reduce(
-          (acc, transaction) => {
-            const amount = Number(transaction.amount) || 0;
-            if (amount < 0) {
-              acc.totalExpenses += Math.abs(amount);
-            } else {
-              acc.totalDeposits += amount;
-            }
-            return acc;
-          },
-          { totalExpenses: 0, totalDeposits: 0 }
-        );
-
-        setMetrics({
-          totalTransactions: transactions.length,
-          totalExpenses: totals.totalExpenses,
-          totalDeposits: totals.totalDeposits,
-        });
-        setTransactions(transactions);
-      } catch (error) {
-        console.error("Error fetching transactions:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
     fetchMetrics();
-  }, [authenticated]);
+  }, [fetchMetrics]);
 
   if (!authenticated) return null;
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return (
+          <TransactionChart
+            transactions={transactions.map((t) => ({
+              date: t.date,
+              amount: t.amount,
+              description: t.description,
+              category: t.category,
+            }))}
+            isLoading={isLoading}
+          />
+        );
+      case "insights":
+        return (
+          <div>
+            <CategoryTreemap
+              transactions={transactions.map((t) => ({
+                date: t.date,
+                amount: t.amount,
+                description: t.description,
+                category: t.category,
+              }))}
+              isLoading={isLoading}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Theme>
-      <Header />
+      <Header
+        onSearchClick={() => setIsSearchOpen(true)}
+        onReloadClick={fetchMetrics}
+        onCreateClick={() => setIsCreateOpen(true)}
+      />
       <main className="pt-20 px-4 max-w-7xl mx-auto">
-		{/* Upload Documents Link */}
-        <Flex justify="between" align="center" className="py-4 px-4">
-          <Flex gap="4">
-            <Button
-              onClick={() =>
-                window.open(
-                  "https://vivek.usw-18.palantirfoundry.com/workspace/module/view/latest/ri.workshop.main.module.39d5ca71-4863-4cfe-8eb2-036312131bcd",
-                  "_blank"
-                )
-              }
-              className="bg-white text-black hover:bg-gray-100 transition-colors"
-			  style={{transition: "transform 0.2s ease-in-out", boxShadow: "0.2s ease-in-out"}}>
-              <UploadIcon />
-              Upload Transactions
-            </Button>
-          </Flex>
-        </Flex>
-        <Flex gap="4" justify="center" style={{ marginTop: "8px"}}>
+        <Watermark />
+        <SearchModal
+          isOpen={isSearchOpen}
+          onClose={() => setIsSearchOpen(false)}
+          transactions={transactions}
+        />
+        <CreateTransactionModal
+          isOpen={isCreateOpen}
+          onClose={() => setIsCreateOpen(false)}
+          onSuccess={fetchMetrics}
+        />
+        <Flex gap="4" justify="center" style={{ marginTop: "8px" }}>
           <MetricCard
             title="Total Transactions"
             value={metrics.totalTransactions}
@@ -117,24 +159,8 @@ export default function Home() {
             isLoading={isLoading}
           />
         </Flex>
-        <TransactionChart
-          transactions={transactions.map((t) => ({
-            date: t.date,
-            amount: t.amount,
-            description: t.description,
-            category: t.category,
-          }))}
-          isLoading={isLoading}
-        />
-        <CategoryTreemap
-          transactions={transactions.map((t) => ({
-            date: t.date,
-            amount: t.amount,
-            description: t.description,
-            category: t.category,
-          }))}
-          isLoading={isLoading}
-        />
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        {renderTabContent()}
       </main>
     </Theme>
   );

@@ -1,6 +1,6 @@
 import { formatCurrency } from "@/lib/utils";
 import "./TransactionModal.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Transaction {
   date: string;
@@ -25,6 +25,13 @@ export function TransactionModal({
   const [sortOrder, setSortOrder] = useState<
     "date" | "amount-asc" | "amount-desc"
   >("date");
+
+  // Reset sort order when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSortOrder("date");
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
