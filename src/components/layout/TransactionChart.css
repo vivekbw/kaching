@@ -1,0 +1,23 @@
+.transaction-tooltip {
+  /* For Webkit browsers like Chrome/Safari */
+  ::-webkit-scrollbar {
+    width: 3px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+
+  /* For Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+
+  /* Add translucent background */
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(8px);
+} 
