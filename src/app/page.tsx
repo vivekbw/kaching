@@ -1,23 +1,22 @@
 "use client";
-import { Theme, Flex, Button } from "@radix-ui/themes";
+import { Theme, Flex } from "@radix-ui/themes";
+import { useCallback, useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { MetricCard } from "@/components/layout/MetricCard";
+import { TabNavigation } from "@/components/layout/TabNavigation";
+import { TransactionChart } from "@/components/layout/TransactionChart";
+import { SearchModal } from "@/components/layout/SearchModal";
+import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
 import { getClient } from "@/lib/client";
 import { $Objects } from "@kaching/sdk";
-import { useEffect, useState, useCallback } from "react";
 import useAuthenticated from "@/lib/useAuthenticated";
 import {
   BarChartIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  UploadIcon,
-  ReloadIcon,
-  MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
-import { TransactionChart } from "@/components/layout/TransactionChart";
 import { CategoryTreemap } from "@/components/layout/CategoryTreemap";
-import { SearchModal } from "@/components/layout/SearchModal";
-import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
+import { Watermark } from "@/components/layout/Watermark";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
@@ -28,6 +27,7 @@ const formatCurrency = (amount: number): string => {
 
 export default function Home() {
   const authenticated = useAuthenticated();
+  const [activeTab, setActiveTab] = useState("overview");
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     totalTransactions: 0,
@@ -84,6 +84,39 @@ export default function Home() {
 
   if (!authenticated) return null;
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return (
+          <TransactionChart
+            transactions={transactions.map((t) => ({
+              date: t.date,
+              amount: t.amount,
+              description: t.description,
+              category: t.category,
+            }))}
+            isLoading={isLoading}
+          />
+        );
+      case "insights":
+        return (
+          <div>
+            <CategoryTreemap
+              transactions={transactions.map((t) => ({
+                date: t.date,
+                amount: t.amount,
+                description: t.description,
+                category: t.category,
+              }))}
+              isLoading={isLoading}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <Theme>
       <Header
@@ -92,6 +125,7 @@ export default function Home() {
         onCreateClick={() => setIsCreateOpen(true)}
       />
       <main className="pt-20 px-4 max-w-7xl mx-auto">
+        <Watermark />
         <SearchModal
           isOpen={isSearchOpen}
           onClose={() => setIsSearchOpen(false)}
@@ -125,24 +159,8 @@ export default function Home() {
             isLoading={isLoading}
           />
         </Flex>
-        <TransactionChart
-          transactions={transactions.map((t) => ({
-            date: t.date,
-            amount: t.amount,
-            description: t.description,
-            category: t.category,
-          }))}
-          isLoading={isLoading}
-        />
-        <CategoryTreemap
-          transactions={transactions.map((t) => ({
-            date: t.date,
-            amount: t.amount,
-            description: t.description,
-            category: t.category,
-          }))}
-          isLoading={isLoading}
-        />
+        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+        {renderTabContent()}
       </main>
     </Theme>
   );

@@ -27,19 +27,25 @@ const COLORS = [
 
 const CustomizedContent = (props: any) => {
   const { x, y, width, height, name, value, index, colors, onClick } = props;
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <g onClick={() => onClick(name)} style={{ cursor: "pointer" }}>
+    <g
+      onClick={() => onClick(name)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ cursor: "pointer" }}>
       <rect
         x={x}
         y={y}
         width={width}
         height={height}
         style={{
-          fill: colors[index % colors.length],
+          fill: isHovered ? "#3b82f6" : colors[index % colors.length],
           stroke: "#fff",
           strokeWidth: 2,
           strokeOpacity: 1,
+          transition: "fill 0.2s ease",
         }}
       />
       {width > 50 && height > 30 && (
@@ -105,10 +111,15 @@ export function CategoryTreemap({
   ];
 
   return (
-    <div className="w-full h-[400px] mt-16 mb-24">
-      <h2 className="text-xl font-bold mb-4 text-center">
-        Expenses by Category
-      </h2>
+    <div className="w-full h-[400px] mb-24">
+      <div className="mb-8">
+        <h2 className="text-2xl font-medium text-gray-900">
+          Spending Categories
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          Analyze your expenses broken down by category (powered by Foundry AIP)
+        </p>
+      </div>
       <ResponsiveContainer width="95%" height="100%">
         <Treemap
           data={data}
