@@ -14,7 +14,11 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
+<<<<<<< Updated upstream
     "@kaching/sdk": "latest",
+=======
+    "@kaching/sdk": "^0.13.0",
+>>>>>>> Stashed changes
     "@osdk/client": "^2.0.9",
     "@osdk/oauth": "^1.0.0",
     "@radix-ui/react-icons": "^1.3.2",

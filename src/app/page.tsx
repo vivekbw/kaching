@@ -16,8 +16,13 @@ import {
 } from "@radix-ui/react-icons";
 import { TransactionChart } from "@/components/layout/TransactionChart";
 import { CategoryTreemap } from "@/components/layout/CategoryTreemap";
+<<<<<<< Updated upstream
 import { SearchModal } from "@/components/layout/SearchModal";
 import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
+=======
+import { Watermark } from "@/components/layout/Watermark";
+import { ChatbotInterface } from "@/components/chat/ChatbotInterface";
+>>>>>>> Stashed changes
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
@@ -28,6 +33,10 @@ const formatCurrency = (amount: number): string => {
 
 export default function Home() {
   const authenticated = useAuthenticated();
+<<<<<<< Updated upstream
+=======
+  const [activeTab, setActiveTab] = useState("Line Chart");
+>>>>>>> Stashed changes
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     totalTransactions: 0,
@@ -84,6 +93,55 @@ export default function Home() {
 
   if (!authenticated) return null;
 
+<<<<<<< Updated upstream
+=======
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "Line Chart":
+        return (
+          <TransactionChart
+            transactions={transactions.map((t) => ({
+              date: t.date,
+              amount: t.amount,
+              description: t.description,
+              category: t.category,
+            }))}
+            isLoading={isLoading}
+          />
+        );
+      case "Categories":
+        return (
+          <CategoryTreemap
+            transactions={transactions.map((t) => ({
+              date: t.date,
+              amount: t.amount,
+              description: t.description,
+              category: t.category,
+            }))}
+            isLoading={isLoading}
+          />
+        );
+      case "Chatbot":
+        return (
+          <div className="w-full mb-24">
+            <div className="mb-4">
+              <h2 className="text-2xl font-medium text-gray-900">
+                AI Assistant
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Chat with our AI to analyze your spending patterns and get
+                financial insights
+              </p>
+            </div>
+            <ChatbotInterface transactions={transactions} />
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+>>>>>>> Stashed changes
   return (
     <Theme>
       <Header
