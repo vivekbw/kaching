@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { getClient } from "@/lib/client";
 import { transactionsChatbot } from "@kaching/sdk";
 import useAuthenticated from "@/lib/useAuthenticated";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   role: "user" | "assistant";
@@ -89,14 +90,21 @@ export function ChatbotInterface({ transactions }: ChatbotInterfaceProps) {
         <div className="py-2 border-b bg-white">
           <p className="text-xs text-gray-500 mb-2">Previous prompts:</p>
           <div className="flex flex-wrap gap-2">
-            {storedPrompts.map((prompt, index) => (
-              <button
-                key={index}
-                onClick={() => handlePromptClick(prompt)}
-                className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-full truncate max-w-[200px]">
-                {prompt}
-              </button>
-            ))}
+            <AnimatePresence initial={false}>
+              {storedPrompts.map((prompt, index) => (
+                <motion.button
+                  key={prompt}
+                  layout
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => handlePromptClick(prompt)}
+                  className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-full truncate max-w-[200px]">
+                  {prompt}
+                </motion.button>
+              ))}
+            </AnimatePresence>
           </div>
         </div>
       )}
