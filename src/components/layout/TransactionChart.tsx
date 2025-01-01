@@ -119,10 +119,15 @@ export function TransactionChart({
   }
 
   return (
-    <div className="w-full h-[400px] mt-8">
-      <h2 className="text-xl font-bold mb-4 text-center">
-        Transactions by Date
-      </h2>
+    <div className="w-full h-[400px]">
+      <div className="mb-8">
+        <h2 className="text-2xl font-medium text-gray-900">
+          Transactions Over Time
+        </h2>
+        <p className="text-sm text-gray-500 mt-1">
+          View your spending patterns and transactions across different dates
+        </p>
+      </div>
       <ResponsiveContainer width="95%" height="100%">
         <LineChart
           data={chartData}
@@ -142,17 +147,30 @@ export function TransactionChart({
                 year: "numeric",
               });
             }}
+            axisLine={false}
+            tickLine={false}
+            style={{
+              fontSize: "12px",
+              opacity: 0.6,
+            }}
+            padding={{ left: 30 }}
           />
           <YAxis
             tickFormatter={(value) => formatCurrency(Math.abs(value))}
             width={80}
+            axisLine={false}
+            tickLine={false}
+            style={{
+              fontSize: "12px",
+              opacity: 0.6,
+            }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Line
             type="monotone"
             dataKey="amount"
             stroke="black"
-            strokeWidth={2}
+            strokeWidth={1.5}
             dot={false}
             activeDot={{ r: 6, fill: "black" }}
           />

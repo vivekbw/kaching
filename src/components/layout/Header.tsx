@@ -4,13 +4,12 @@ import { Theme, Button, Flex } from "@radix-ui/themes";
 import {
   ExitIcon,
   UploadIcon,
-  ReloadIcon,
+  ReloadIcon,	
   MagnifyingGlassIcon,
   PlusIcon,
 } from "@radix-ui/react-icons";
-import { BiDollar } from "react-icons/bi";
-import { getAuth } from "@/lib/client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import "./styles.css";
 
 interface HeaderProps {
@@ -27,13 +26,18 @@ export function Header({
   const router = useRouter();
 
   return (
-    <div className="fixed top-0 left-0 right-0 flex w-full justify-between items-center bg-white shadow-sm z-10 px-4">
+    <div className="fixed top-0 left-0 right-0 flex w-full justify-between items-center bg-white/85 backdrop-blur-sm shadow-sm z-10 px-4">
       <NavigationMenu.Root>
         <NavigationMenu.List>
           <NavigationMenu.Item>
             <NavigationMenu.Link className="NavigationMenuLink" href="/">
               <div className="flex items-center gap-2 py-4">
-                <BiDollar className="w-6 h-6 text-black-500" />
+                <Image
+                  src="/money_face.svg"
+                  alt="Money Face"
+                  width={24}
+                  height={24}
+                />
                 <span className="text-xl font-bold text-black">kaching</span>
               </div>
             </NavigationMenu.Link>
