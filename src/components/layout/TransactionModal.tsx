@@ -59,7 +59,7 @@ export function TransactionModal({
   return (
     <>
       <div className="modal-overlay" onClick={onClose} />
-      <div className="modal-container transaction-tooltip">
+      <div className="modal-container">
         <div className="modal-header">
           <h2 className="text-xl font-bold">{category} Transactions</h2>
           <button onClick={onClose} className="modal-close">
