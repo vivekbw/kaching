@@ -1,5 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { getClient } from "@/lib/client";
+import { $Objects, createOrModifyBudget } from "@kaching/sdk";
+import toast from "react-hot-toast";
+import { ChevronRightIcon } from "@radix-ui/react-icons";
+import { BudgetDetailsModal } from "./BudgetDetailsModal";
+import { CreateBudgetModal } from "./CreateBudgetModal";
 
 interface Transaction {
   date: string;
@@ -13,21 +20,122 @@ interface BudgetViewProps {
   isLoading?: boolean;
 }
 
-export function BudgetView({ transactions, isLoading = false }: BudgetViewProps) {
-  const [selectedMonth, setSelectedMonth] = useState(() => {
-    const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-  });
+interface Budget {
+  monthYear: string;
+  currentBudget: string;
+  deposits: number;
+  expenses: number;
+}
 
-  if (isLoading) {
-    return <div className="animate-pulse h-[400px] bg-gray-100 rounded-lg" />;
-  }
+export function BudgetView({
+  transactions,
+  isLoading = false,
+}: BudgetViewProps) {
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [currentBudget, setCurrentBudget] = useState("");
+  const [budgetData, setBudgetData] = useState<Budget | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [existingBudgets, setExistingBudgets] = useState<Budget[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const monthlyTransactions = transactions.filter(t => {
+  useEffect(() => {
+    async function fetchBudget() {
+      const client = getClient();
+      try {
+        const budgets = [];
+        for await (const budget of client($Objects.Budget)
+          .where({ monthYear: selectedMonth })
+          .asyncIter()) {
+          budgets.push(budget);
+        }
+        if (budgets.length > 0) {
+          setBudgetData(budgets[0]);
+          setCurrentBudget(budgets[0].currentBudget);
+        } else {
+          setBudgetData(null);
+          setCurrentBudget("");
+        }
+      } catch (error) {
+        console.error("Error fetching budget:", error);
+      }
+    }
+    fetchBudget();
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    async function fetchAllBudgets() {
+      const client = getClient();
+      try {
+        const budgets = [];
+        for await (const budget of client($Objects.Budget).asyncIter()) {
+          budgets.push(budget);
+        }
+        setExistingBudgets(
+          budgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
+        );
+      } catch (error) {
+        console.error("Error fetching budgets:", error);
+      }
+    }
+    fetchAllBudgets();
+  }, []);
+
+  const handleSaveBudget = async () => {
+    const client = getClient();
+    try {
+      await client(createOrModifyBudget).applyAction({
+        Budget: selectedMonth,
+        current_budget: currentBudget,
+      });
+      setIsEditing(false);
+
+      // Refresh all budgets after saving
+      const allBudgets = [];
+      for await (const budget of client($Objects.Budget).asyncIter()) {
+        allBudgets.push(budget);
+      }
+      setExistingBudgets(
+        allBudgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
+      );
+
+      // Refresh current budget data
+      const budgets = [];
+      for await (const budget of client($Objects.Budget)
+        .where({ monthYear: selectedMonth })
+        .asyncIter()) {
+        budgets.push(budget);
+      }
+      if (budgets.length > 0) {
+        setBudgetData(budgets[0]);
+        toast.success(
+          `Budget for ${formatMonthDisplay(
+            selectedMonth
+          )} updated to ${formatCurrency(Number(currentBudget))}`
+        );
+      }
+    } catch (error) {
+      console.error("Error saving budget:", error);
+      toast.error("Failed to update budget. Please try again.");
+    }
+  };
+
+  const monthlyTransactions = transactions.filter((t) => {
     const transactionDate = new Date(t.date);
-    const transactionMonth = `${transactionDate.getFullYear()}-${String(transactionDate.getMonth() + 1).padStart(2, '0')}`;
+    const transactionMonth = `${transactionDate.getFullYear()}-${String(
+      transactionDate.getMonth() + 1
+    ).padStart(2, "0")}`;
     return transactionMonth === selectedMonth;
   });
+
+  const totalSpent = monthlyTransactions.reduce((sum, t) => {
+    return sum + (Number(t.amount) > 0 ? Number(t.amount) : 0);
+  }, 0);
+
+  const budgetAmount = Number(currentBudget) || 0;
+  const percentageUsed =
+    budgetAmount > 0 ? (totalSpent / budgetAmount) * 100 : 0;
+  const remainingBudget = budgetAmount - totalSpent;
 
   const categoryTotals = monthlyTransactions.reduce((acc, transaction) => {
     const amount = Number(transaction.amount);
@@ -38,57 +146,128 @@ export function BudgetView({ transactions, isLoading = false }: BudgetViewProps)
     return acc;
   }, {} as Record<string, number>);
 
-  const totalSpent = Object.values(categoryTotals).reduce((sum, amount) => sum + amount, 0);
+  const formatMonthDisplay = (monthYear: string) => {
+    const [year, month] = monthYear.split("-");
+    return new Date(`${year}-${month}-01`).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+    });
+  };
+
+  const calculateMonthlyExpenses = (monthYear: string) => {
+    return transactions
+      .filter((t) => {
+        const transactionDate = new Date(t.date);
+        const transactionMonth = `${transactionDate.getFullYear()}-${String(
+          transactionDate.getMonth() + 1
+        ).padStart(2, "0")}`;
+        return transactionMonth === monthYear && Number(t.amount) > 0;
+      })
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+  };
 
   return (
     <div className="w-full mb-24">
       <div className="mb-8">
         <h2 className="text-2xl font-medium text-gray-900">Monthly Budget</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Track your monthly spending by category
+          Track and manage your monthly spending budget
         </p>
       </div>
 
       <div className="mb-6">
-        <input
-          type="month"
-          value={selectedMonth}
-          onChange={(e) => setSelectedMonth(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-        />
-      </div>
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">Total Spent</h3>
-            <span className="text-2xl font-bold text-red-600">
-              {formatCurrency(totalSpent)}
-            </span>
-          </div>
-        </div>
-
-        <div className="p-6">
-          {Object.entries(categoryTotals)
-            .sort(([, a], [, b]) => b - a)
-            .map(([category, amount]) => (
+        <h2 className="text-xl font-medium text-gray-900 mb-4">
+          Existing Budgets
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          {existingBudgets
+            .filter((budget) => !isNaN(Number(budget.currentBudget)))
+            .map((budget) => (
               <div
-                key={category}
-                className="flex justify-between items-center py-3 border-b last:border-0"
-              >
-                <div>
-                  <span className="font-medium">{category}</span>
-                  <div className="text-sm text-gray-500">
-                    {((amount / totalSpent) * 100).toFixed(1)}% of total
-                  </div>
+                key={budget.monthYear}
+                className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                  selectedMonth === budget.monthYear
+                    ? "border-black shadow-md"
+                    : "border-gray-200 hover:border-gray-400"
+                }`}
+                onClick={() => {
+                  if (selectedMonth === budget.monthYear) {
+                    setSelectedMonth("");
+                    setBudgetData(null);
+                    setCurrentBudget("");
+                    setIsModalOpen(false);
+                  } else {
+                    setSelectedMonth(budget.monthYear);
+                    setIsModalOpen(true);
+                  }
+                }}>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="font-medium">
+                    {formatMonthDisplay(budget.monthYear)}
+                  </h3>
+                  <ChevronRightIcon className="w-4 h-4 text-gray-400" />
                 </div>
-                <span className="text-red-600 font-medium">
-                  {formatCurrency(amount)}
-                </span>
+                <div className="text-lg font-bold">
+                  {formatCurrency(Number(budget.currentBudget))}
+                </div>
+                <div className="text-sm text-gray-500 mt-1">
+                  {formatCurrency(calculateMonthlyExpenses(budget.monthYear))}{" "}
+                  spent
+                </div>
               </div>
             ))}
+
+          <button
+            onClick={() => {
+              const today = new Date();
+              const nextMonth = new Date(today.setMonth(today.getMonth() + 1));
+              setSelectedMonth(
+                `${nextMonth.getFullYear()}-${String(
+                  nextMonth.getMonth() + 1
+                ).padStart(2, "0")}`
+              );
+              setIsCreateModalOpen(true);
+            }}
+            className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-colors">
+            <span className="text-2xl mb-1">+</span>
+            <span>Create New Budget</span>
+          </button>
         </div>
+
+        {selectedMonth && budgetAmount > 0 && (
+          <BudgetDetailsModal
+            isOpen={isModalOpen}
+            onClose={() => {
+              setIsModalOpen(false);
+              setSelectedMonth("");
+              setBudgetData(null);
+              setCurrentBudget("");
+            }}
+            monthYear={selectedMonth}
+            budgetAmount={budgetAmount}
+            totalSpent={totalSpent}
+            remainingBudget={remainingBudget}
+            percentageUsed={percentageUsed}
+            categoryTotals={categoryTotals}
+            formatMonthDisplay={formatMonthDisplay}
+          />
+        )}
+
+        <CreateBudgetModal
+          isOpen={isCreateModalOpen}
+          onClose={() => {
+            setIsCreateModalOpen(false);
+            setSelectedMonth("");
+            setCurrentBudget("");
+          }}
+          selectedMonth={selectedMonth}
+          currentBudget={currentBudget}
+          onSave={handleSaveBudget}
+          onMonthChange={setSelectedMonth}
+          onBudgetChange={setCurrentBudget}
+          transactions={transactions}
+        />
       </div>
     </div>
   );
-} 
+}
