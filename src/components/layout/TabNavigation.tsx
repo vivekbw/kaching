@@ -1,6 +1,7 @@
 import { HiOutlineSparkles } from "react-icons/hi2";
 import { BarChartIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
 import { PiChatTeardropTextLight } from "react-icons/pi";
+import { HiOutlineWallet } from "react-icons/hi2";
 
 interface TabNavigationProps {
   activeTab: string;
@@ -34,6 +35,19 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           <HiOutlineSparkles className="w-4 h-4" />
           Spending Categories
           {activeTab === "Categories" && (
+            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
+          )}
+        </button>
+        <button
+          onClick={() => onTabChange("Budget")}
+          className={`px-4 py-2 flex items-center gap-2 relative ${
+            activeTab === "Budget"
+              ? "text-black"
+              : "text-gray-500 hover:text-gray-700"
+          }`}>
+          <HiOutlineWallet className="w-4 h-4" />
+          Budget
+          {activeTab === "Budget" && (
             <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
           )}
         </button>

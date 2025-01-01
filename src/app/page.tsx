@@ -18,6 +18,7 @@ import { SearchModal } from "@/components/layout/SearchModal";
 import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
 import { Watermark } from "@/components/layout/Watermark";
 import { ChatbotInterface } from "@/components/chat/ChatbotInterface";
+import { BudgetView } from "@/components/layout/BudgetView";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
@@ -86,17 +87,19 @@ export default function Home() {
   if (!authenticated) return null;
 
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "Line Chart":
-        return <TransactionChart transactions={transactions} isLoading={isLoading} />;
-      case "Categories":
-        return <CategoryTreemap transactions={transactions} isLoading={isLoading} />;
-      case "Chatbot":
-        return <ChatbotInterface transactions={transactions} />;
-      default:
-        return null;
-    }
-  };
+  switch (activeTab) {
+    case "Line Chart":
+      return <TransactionChart transactions={transactions} isLoading={isLoading} />;
+    case "Categories":
+      return <CategoryTreemap transactions={transactions} isLoading={isLoading} />;
+    case "Budget":
+      return <BudgetView transactions={transactions} isLoading={isLoading} />;
+    case "Chatbot":
+      return <ChatbotInterface transactions={transactions} />;
+    default:
+      return null;
+  }
+};
 
   return (
     <Theme>
