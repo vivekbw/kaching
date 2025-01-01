@@ -42,17 +42,6 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           Overview
         </button>
         <button
-          ref={tabRefs["Categories"]}
-          onClick={() => onTabChange("Categories")}
-          className={`px-4 py-2 flex items-center gap-2 relative ${
-            activeTab === "Categories"
-              ? "text-black"
-              : "text-gray-500 hover:text-gray-700"
-          }`}>
-          <HiOutlineSparkles className="w-4 h-4" />
-          Spending Categories
-        </button>
-        <button
           ref={tabRefs["Budget"]}
           onClick={() => onTabChange("Budget")}
           className={`px-4 py-2 flex items-center gap-2 relative ${
@@ -62,6 +51,17 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}>
           <HiOutlineWallet className="w-4 h-4" />
           Budget
+        </button>
+        <button
+          ref={tabRefs["Categories"]}
+          onClick={() => onTabChange("Categories")}
+          className={`px-4 py-2 flex items-center gap-2 relative ${
+            activeTab === "Categories"
+              ? "text-black"
+              : "text-gray-500 hover:text-gray-700"
+          }`}>
+          <HiOutlineSparkles className="w-4 h-4" />
+          Spending Categories
         </button>
         <button
           ref={tabRefs["Chatbot"]}
