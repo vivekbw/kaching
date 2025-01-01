@@ -2,6 +2,8 @@ import { HiOutlineSparkles } from "react-icons/hi2";
 import { BarChartIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
 import { PiChatTeardropTextLight } from "react-icons/pi";
 import { HiOutlineWallet } from "react-icons/hi2";
+import { motion } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 
 interface TabNavigationProps {
   activeTab: string;
@@ -9,10 +11,27 @@ interface TabNavigationProps {
 }
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, x: 0 });
+  const tabRefs = {
+    "Line Chart": useRef<HTMLButtonElement>(null),
+    Categories: useRef<HTMLButtonElement>(null),
+    Budget: useRef<HTMLButtonElement>(null),
+    Chatbot: useRef<HTMLButtonElement>(null),
+  };
+
+  useEffect(() => {
+    const activeTabElement = tabRefs[activeTab as keyof typeof tabRefs]?.current;
+    if (activeTabElement) {
+      const { offsetWidth, offsetLeft } = activeTabElement;
+      setIndicatorStyle({ width: offsetWidth, x: offsetLeft });
+    }
+  }, [activeTab]);
+
   return (
     <div className="mb-8 mt-8">
-      <div className="flex gap-8 border-b border-gray-200">
+      <div className="flex gap-8 border-b border-gray-200 relative">
         <button
+          ref={tabRefs["Line Chart"]}
           onClick={() => onTabChange("Line Chart")}
           className={`px-4 py-2 flex items-center gap-2 relative ${
             activeTab === "Line Chart"
@@ -21,11 +40,9 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}>
           <BarChartIcon />
           Overview
-          {activeTab === "Line Chart" && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
-          )}
         </button>
         <button
+          ref={tabRefs["Categories"]}
           onClick={() => onTabChange("Categories")}
           className={`px-4 py-2 flex items-center gap-2 relative ${
             activeTab === "Categories"
@@ -34,11 +51,9 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}>
           <HiOutlineSparkles className="w-4 h-4" />
           Spending Categories
-          {activeTab === "Categories" && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
-          )}
         </button>
         <button
+          ref={tabRefs["Budget"]}
           onClick={() => onTabChange("Budget")}
           className={`px-4 py-2 flex items-center gap-2 relative ${
             activeTab === "Budget"
@@ -47,11 +62,9 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}>
           <HiOutlineWallet className="w-4 h-4" />
           Budget
-          {activeTab === "Budget" && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
-          )}
         </button>
         <button
+          ref={tabRefs["Chatbot"]}
           onClick={() => onTabChange("Chatbot")}
           className={`px-4 py-2 flex items-center gap-2 relative ${
             activeTab === "Chatbot"
@@ -60,10 +73,21 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}>
           <PiChatTeardropTextLight className="w-4 h-4" />
           AI Chatbot
-          {activeTab === "Chatbot" && (
-            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />
-          )}
         </button>
+        <motion.div
+          className="absolute bottom-0 left-0 h-0.5 bg-black"
+          layoutId="activeTab"
+          initial={false}
+          animate={{
+            width: indicatorStyle.width,
+            x: indicatorStyle.x,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 350,
+            damping: 30,
+          }}
+        />
       </div>
     </div>
   );
