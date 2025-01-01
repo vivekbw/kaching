@@ -5,8 +5,6 @@ import { Header } from "@/components/layout/Header";
 import { MetricCard } from "@/components/layout/MetricCard";
 import { TabNavigation } from "@/components/layout/TabNavigation";
 import { TransactionChart } from "@/components/layout/TransactionChart";
-import { SearchModal } from "@/components/layout/SearchModal";
-import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
 import { getClient } from "@/lib/client";
 import { $Objects } from "@kaching/sdk";
 import useAuthenticated from "@/lib/useAuthenticated";
@@ -16,7 +14,10 @@ import {
   ArrowDownIcon,
 } from "@radix-ui/react-icons";
 import { CategoryTreemap } from "@/components/layout/CategoryTreemap";
+import { SearchModal } from "@/components/layout/SearchModal";
+import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
 import { Watermark } from "@/components/layout/Watermark";
+import { ChatbotInterface } from "@/components/chat/ChatbotInterface";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
@@ -27,7 +28,7 @@ const formatCurrency = (amount: number): string => {
 
 export default function Home() {
   const authenticated = useAuthenticated();
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("Line Chart");
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     totalTransactions: 0,
@@ -86,32 +87,12 @@ export default function Home() {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "overview":
-        return (
-          <TransactionChart
-            transactions={transactions.map((t) => ({
-              date: t.date,
-              amount: t.amount,
-              description: t.description,
-              category: t.category,
-            }))}
-            isLoading={isLoading}
-          />
-        );
-      case "insights":
-        return (
-          <div>
-            <CategoryTreemap
-              transactions={transactions.map((t) => ({
-                date: t.date,
-                amount: t.amount,
-                description: t.description,
-                category: t.category,
-              }))}
-              isLoading={isLoading}
-            />
-          </div>
-        );
+      case "Line Chart":
+        return <TransactionChart transactions={transactions} isLoading={isLoading} />;
+      case "Categories":
+        return <CategoryTreemap transactions={transactions} isLoading={isLoading} />;
+      case "Chatbot":
+        return <ChatbotInterface transactions={transactions} />;
       default:
         return null;
     }
