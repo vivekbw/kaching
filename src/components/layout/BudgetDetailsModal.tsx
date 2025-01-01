@@ -1,7 +1,8 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
 
 interface BudgetDetailsModalProps {
   isOpen: boolean;
@@ -13,6 +14,9 @@ interface BudgetDetailsModalProps {
   percentageUsed: number;
   categoryTotals: Record<string, number>;
   formatMonthDisplay: (monthYear: string) => string;
+  onBudgetChange: (budget: string) => void;
+  onSave: () => void;
+  currentBudget: string;
 }
 
 export function BudgetDetailsModal({
@@ -25,7 +29,12 @@ export function BudgetDetailsModal({
   percentageUsed,
   categoryTotals,
   formatMonthDisplay,
+  onBudgetChange,
+  onSave,
+  currentBudget,
 }: BudgetDetailsModalProps) {
+  const [isEditing, setIsEditing] = useState(false);
+
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
       <Dialog.Portal>
@@ -35,10 +44,58 @@ export function BudgetDetailsModal({
             <Dialog.Title className="text-xl font-bold">
               Budget Details for {formatMonthDisplay(monthYear)}
             </Dialog.Title>
-            <Dialog.Close className="rounded-full p-1.5 hover:bg-gray-100">
-              <Cross2Icon />
-            </Dialog.Close>
+            <div className="flex items-center gap-2">
+              {!isEditing && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                  Edit Budget
+                </button>
+              )}
+              <Dialog.Close className="rounded-full p-1.5 hover:bg-gray-100">
+                <Cross2Icon />
+              </Dialog.Close>
+            </div>
           </div>
+
+          <AnimatePresence>
+            {isEditing && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden">
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Update Budget Amount
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={currentBudget}
+                      onChange={(e) => onBudgetChange(e.target.value)}
+                      className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      placeholder="Enter new budget amount..."
+                    />
+                    <button
+                      onClick={() => {
+                        onSave();
+                        setIsEditing(false);
+                      }}
+                      className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow p-6">

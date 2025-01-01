@@ -38,11 +38,14 @@ export function BudgetView({
   const [existingBudgets, setExistingBudgets] = useState<Budget[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isFetchingBudget, setIsFetchingBudget] = useState(false);
+  const [isFetchingAllBudgets, setIsFetchingAllBudgets] = useState(false);
 
   useEffect(() => {
     async function fetchBudget() {
       const client = getClient();
       try {
+        setIsFetchingBudget(true);
         const budgets = [];
         for await (const budget of client($Objects.Budget)
           .where({ monthYear: selectedMonth })
@@ -58,6 +61,8 @@ export function BudgetView({
         }
       } catch (error) {
         console.error("Error fetching budget:", error);
+      } finally {
+        setIsFetchingBudget(false);
       }
     }
     fetchBudget();
@@ -66,59 +71,25 @@ export function BudgetView({
   useEffect(() => {
     async function fetchAllBudgets() {
       const client = getClient();
-      try {
-        const budgets = [];
-        for await (const budget of client($Objects.Budget).asyncIter()) {
-          budgets.push(budget);
+      if (!existingBudgets.length) {
+        try {
+          setIsFetchingAllBudgets(true);
+          const budgets = [];
+          for await (const budget of client($Objects.Budget).asyncIter()) {
+            budgets.push(budget);
+          }
+          setExistingBudgets(
+            budgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
+          );
+        } catch (error) {
+          console.error("Error fetching budgets:", error);
+        } finally {
+          setIsFetchingAllBudgets(false);
         }
-        setExistingBudgets(
-          budgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
-        );
-      } catch (error) {
-        console.error("Error fetching budgets:", error);
       }
     }
     fetchAllBudgets();
-  }, []);
-
-  const handleSaveBudget = async () => {
-    const client = getClient();
-    try {
-      await client(createOrModifyBudget).applyAction({
-        Budget: selectedMonth,
-        current_budget: currentBudget,
-      });
-      setIsEditing(false);
-
-      // Refresh all budgets after saving
-      const allBudgets = [];
-      for await (const budget of client($Objects.Budget).asyncIter()) {
-        allBudgets.push(budget);
-      }
-      setExistingBudgets(
-        allBudgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
-      );
-
-      // Refresh current budget data
-      const budgets = [];
-      for await (const budget of client($Objects.Budget)
-        .where({ monthYear: selectedMonth })
-        .asyncIter()) {
-        budgets.push(budget);
-      }
-      if (budgets.length > 0) {
-        setBudgetData(budgets[0]);
-        toast.success(
-          `Budget for ${formatMonthDisplay(
-            selectedMonth
-          )} updated to ${formatCurrency(Number(currentBudget))}`
-        );
-      }
-    } catch (error) {
-      console.error("Error saving budget:", error);
-      toast.error("Failed to update budget. Please try again.");
-    }
-  };
+  }, [existingBudgets.length]);
 
   const monthlyTransactions = transactions.filter((t) => {
     const transactionDate = new Date(t.date);
@@ -166,6 +137,83 @@ export function BudgetView({
       .reduce((sum, t) => sum + Number(t.amount), 0);
   };
 
+  if (isLoading || isFetchingAllBudgets) {
+    return (
+      <div className="w-full mb-24">
+        <div className="mb-8">
+          <div className="h-8 w-48 bg-gray-200 rounded-lg animate-pulse" />
+          <div className="h-4 w-72 bg-gray-200 rounded-lg mt-1 animate-pulse" />
+        </div>
+
+        <div className="mb-6">
+          <div className="h-6 w-40 bg-gray-200 rounded-lg mb-4 animate-pulse" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {[...Array(3)].map((_, index) => (
+              <div
+                key={index}
+                className="p-4 rounded-lg border border-gray-200">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
+                  <div className="h-4 w-4 bg-gray-200 rounded animate-pulse" />
+                </div>
+                <div className="h-7 w-24 bg-gray-200 rounded animate-pulse" />
+                <div className="mt-2 space-y-1">
+                  <div className="h-2 bg-gray-200 rounded-full" />
+                  <div className="flex justify-between items-center">
+                    <div className="h-4 w-20 bg-gray-200 rounded animate-pulse" />
+                    <div className="h-4 w-12 bg-gray-200 rounded animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center gap-2">
+              <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSaveBudget = async () => {
+    const client = getClient();
+    try {
+      await client(createOrModifyBudget).applyAction({
+        Budget: selectedMonth,
+        current_budget: currentBudget,
+      });
+      setIsEditing(false);
+
+      // Refresh all budgets after saving
+      const allBudgets = [];
+      for await (const budget of client($Objects.Budget).asyncIter()) {
+        allBudgets.push(budget);
+      }
+      setExistingBudgets(
+        allBudgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
+      );
+
+      // Refresh current budget data
+      const budgets = [];
+      for await (const budget of client($Objects.Budget)
+        .where({ monthYear: selectedMonth })
+        .asyncIter()) {
+        budgets.push(budget);
+      }
+      if (budgets.length > 0) {
+        setBudgetData(budgets[0]);
+        toast.success(
+          `Budget for ${formatMonthDisplay(
+            selectedMonth
+          )} updated to ${formatCurrency(Number(currentBudget))}`
+        );
+      }
+    } catch (error) {
+      console.error("Error saving budget:", error);
+      toast.error("Failed to update budget. Please try again.");
+    }
+  };
+
   return (
     <div className="w-full mb-24">
       <div className="mb-8">
@@ -182,40 +230,73 @@ export function BudgetView({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {existingBudgets
             .filter((budget) => !isNaN(Number(budget.currentBudget)))
-            .map((budget) => (
-              <div
-                key={budget.monthYear}
-                className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                  selectedMonth === budget.monthYear
-                    ? "border-black shadow-md"
-                    : "border-gray-200 hover:border-gray-400"
-                }`}
-                onClick={() => {
-                  if (selectedMonth === budget.monthYear) {
-                    setSelectedMonth("");
-                    setBudgetData(null);
-                    setCurrentBudget("");
-                    setIsModalOpen(false);
-                  } else {
-                    setSelectedMonth(budget.monthYear);
-                    setIsModalOpen(true);
-                  }
-                }}>
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium">
-                    {formatMonthDisplay(budget.monthYear)}
-                  </h3>
-                  <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+            .map((budget) => {
+              const monthExpenses = calculateMonthlyExpenses(budget.monthYear);
+              const percentageUsed =
+                (monthExpenses / Number(budget.currentBudget)) * 100;
+
+              return (
+                <div
+                  key={budget.monthYear}
+                  className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                    selectedMonth === budget.monthYear
+                      ? "border-black shadow-md"
+                      : "border-gray-200 hover:border-gray-400"
+                  }`}
+                  onClick={() => {
+                    if (selectedMonth === budget.monthYear) {
+                      setSelectedMonth("");
+                      setBudgetData(null);
+                      setCurrentBudget("");
+                      setIsModalOpen(false);
+                    } else {
+                      setSelectedMonth(budget.monthYear);
+                      setIsModalOpen(true);
+                    }
+                  }}>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-medium">
+                      {formatMonthDisplay(budget.monthYear)}
+                    </h3>
+                    <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <div className="text-lg font-bold">
+                    {formatCurrency(Number(budget.currentBudget))}
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${Math.min(percentageUsed, 100)}%` }}
+                        transition={{ duration: 0.5 }}
+                        className={`absolute top-0 left-0 h-full ${
+                          percentageUsed > 100
+                            ? "bg-red-500"
+                            : percentageUsed > 80
+                            ? "bg-yellow-500"
+                            : "bg-green-500"
+                        }`}
+                      />
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-500">
+                        {formatCurrency(monthExpenses)} spent
+                      </span>
+                      <span
+                        className={`font-medium ${
+                          percentageUsed > 100
+                            ? "text-red-600"
+                            : percentageUsed > 80
+                            ? "text-yellow-600"
+                            : "text-green-600"
+                        }`}>
+                        {percentageUsed.toFixed(0)}%
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-lg font-bold">
-                  {formatCurrency(Number(budget.currentBudget))}
-                </div>
-                <div className="text-sm text-gray-500 mt-1">
-                  {formatCurrency(calculateMonthlyExpenses(budget.monthYear))}{" "}
-                  spent
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
           <button
             onClick={() => {
@@ -228,8 +309,8 @@ export function BudgetView({
               );
               setIsCreateModalOpen(true);
             }}
-            className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 flex flex-col items-center justify-center text-gray-500 hover:text-gray-700 transition-colors">
-            <span className="text-2xl mb-1">+</span>
+            className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-gray-400 flex items-center justify-center gap-2 text-gray-500 hover:text-gray-700 transition-colors">
+            <span className="text-xl">+</span>
             <span>Create New Budget</span>
           </button>
         </div>
@@ -250,6 +331,9 @@ export function BudgetView({
             percentageUsed={percentageUsed}
             categoryTotals={categoryTotals}
             formatMonthDisplay={formatMonthDisplay}
+            onBudgetChange={setCurrentBudget}
+            onSave={handleSaveBudget}
+            currentBudget={currentBudget}
           />
         )}
 
