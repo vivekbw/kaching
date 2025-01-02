@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Treemap, ResponsiveContainer } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { ChartSkeleton } from "./ChartSkeleton";
-import { TransactionModal } from "./TransactionModal";
+import { TransactionModal } from "../modals/transactions/TransactionModal";
 
 interface Transaction {
   date: string;

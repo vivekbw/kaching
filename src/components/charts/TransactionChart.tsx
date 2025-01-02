@@ -1,6 +1,14 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Brush } from 'recharts';
-import { formatCurrency } from '@/lib/utils';
-import { useEffect, useRef } from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Brush,
+} from "recharts";
+import { formatCurrency } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 import "./TransactionChart.css";
 import { ChartSkeleton } from "./ChartSkeleton";
 
@@ -191,4 +199,4 @@ export function TransactionChart({
       </ResponsiveContainer>
     </div>
   );
-} 
+}

@@ -5,8 +5,8 @@ import { getClient } from "@/lib/client";
 import { $Objects, createOrModifyBudget } from "@kaching/sdk";
 import toast from "react-hot-toast";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
-import { BudgetDetailsModal } from "./BudgetDetailsModal";
-import { CreateBudgetModal } from "./CreateBudgetModal";
+import { BudgetDetailsModal } from "../modals/budget/BudgetDetailsModal";
+import { CreateBudgetModal } from "../modals/budget/CreateBudgetModal";
 
 interface Transaction {
   date: string;

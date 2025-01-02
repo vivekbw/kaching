@@ -1,10 +1,10 @@
 "use client";
 import { Theme, Flex } from "@radix-ui/themes";
 import { useCallback, useState, useEffect } from "react";
-import { Header } from "@/components/layout/Header";
-import { MetricCard } from "@/components/layout/MetricCard";
-import { TabNavigation } from "@/components/layout/TabNavigation";
-import { TransactionChart } from "@/components/layout/TransactionChart";
+import { Header } from "@/components/layout/header/Header";
+import { MetricCard } from "@/components/layout/metrics/MetricCard";
+import { TabNavigation } from "@/components/layout/navigation/TabNavigation";
+import { TransactionChart } from "@/components/charts/TransactionChart";
 import { getClient } from "@/lib/client";
 import { $Objects } from "@kaching/sdk";
 import useAuthenticated from "@/lib/useAuthenticated";
@@ -13,12 +13,12 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
 } from "@radix-ui/react-icons";
-import { CategoryTreemap } from "@/components/layout/CategoryTreemap";
-import { SearchModal } from "@/components/layout/SearchModal";
-import { CreateTransactionModal } from "@/components/layout/CreateTransactionModal";
-import { Watermark } from "@/components/layout/Watermark";
+import { CategoryTreemap } from "@/components/charts/CategoryTreemap";
+import { SearchModal } from "@/components/modals/transactions/SearchModal";
+import { CreateTransactionModal } from "@/components/modals/transactions/CreateTransactionModal";
+import { Watermark } from "@/components/ui/Watermark";
 import { ChatbotInterface } from "@/components/chat/ChatbotInterface";
-import { BudgetView } from "@/components/layout/BudgetView";
+import { BudgetView } from "@/components/budget/BudgetView";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
