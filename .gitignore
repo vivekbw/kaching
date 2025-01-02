@@ -1,36 +1,79 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# testing
+# Testing
 /coverage
+/.nyc_output
+/cypress/videos/
+/cypress/screenshots/
 
-# next.js
-/.next
-/out
-
-# production
+# Next.js
+/.next/
+/out/
 /build
+.next
+next-env.d.ts
 
-# misc
-.DS_Store
-*.pem
+# Production
+/build
+/dist
+/.output
 
-# debug
+# Environment files
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# local env files
-.env*.local
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.pem
+.project
+.classpath
+*.launch
+.settings/
 
-# vercel
+# Vercel
 .vercel
+.turbo
 
-# typescript
+# TypeScript
 *.tsbuildinfo
-next-env.d.ts
+
+# PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
+# Misc
+*.log
+.DS_Store
+*.pem
+.cache
+.temp
+.tmp
+
+# Local files
+*.local
+
+# Package managers
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
