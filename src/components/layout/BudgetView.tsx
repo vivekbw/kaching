@@ -93,10 +93,12 @@ export function BudgetView({
 
   const monthlyTransactions = transactions.filter((t) => {
     const transactionDate = new Date(t.date);
-    const transactionMonth = `${transactionDate.getFullYear()}-${String(
-      transactionDate.getMonth() + 1
-    ).padStart(2, "0")}`;
-    return transactionMonth === selectedMonth;
+    const [year, month] = selectedMonth.split("-");
+    const budgetDate = new Date(`${year}-${month}-01`);
+    return (
+      transactionDate.getMonth() === budgetDate.getMonth() &&
+      transactionDate.getFullYear() === budgetDate.getFullYear()
+    );
   });
 
   const totalSpent = monthlyTransactions.reduce((sum, t) => {
@@ -178,10 +180,28 @@ export function BudgetView({
   const handleSaveBudget = async () => {
     const client = getClient();
     try {
-      await client(createOrModifyBudget).applyAction({
-        Budget: selectedMonth,
-        current_budget: currentBudget,
-      });
+      // Convert YYYY-MM to Month-YYYY format
+      const [year, month] = selectedMonth.split("-");
+      const date = new Date(`${year}-${month}-01`);
+      const formattedMonth = date.toLocaleString("en-US", { month: "long" });
+      const primaryKey = `${formattedMonth}-${year}`;
+
+      console.log("UPDATING the BUDGET FOR: ", primaryKey);
+
+      const result = await client(createOrModifyBudget).applyAction(
+        {
+          Budget: {
+            $primaryKey: primaryKey,
+            $apiName: "Budget",
+            $objectType: "Budget",
+            $title: primaryKey,
+          },
+          current_budget: currentBudget,
+        },
+        {
+          $returnEdits: true,
+        }
+      );
       setIsEditing(false);
 
       // Refresh all budgets after saving
@@ -231,9 +251,10 @@ export function BudgetView({
           {existingBudgets
             .filter((budget) => !isNaN(Number(budget.currentBudget)))
             .map((budget) => {
-              const monthExpenses = calculateMonthlyExpenses(budget.monthYear);
+              const monthlyExpenses =
+                budget.expenses || calculateMonthlyExpenses(budget.monthYear);
               const percentageUsed =
-                (monthExpenses / Number(budget.currentBudget)) * 100;
+                (monthlyExpenses / Number(budget.currentBudget)) * 100;
 
               return (
                 <div
@@ -280,7 +301,7 @@ export function BudgetView({
                     </div>
                     <div className="flex justify-between items-center text-sm">
                       <span className="text-gray-500">
-                        {formatCurrency(monthExpenses)} spent
+                        {formatCurrency(monthlyExpenses)} spent
                       </span>
                       <span
                         className={`font-medium ${
@@ -326,9 +347,13 @@ export function BudgetView({
             }}
             monthYear={selectedMonth}
             budgetAmount={budgetAmount}
-            totalSpent={totalSpent}
-            remainingBudget={remainingBudget}
-            percentageUsed={percentageUsed}
+            totalSpent={budgetData?.expenses || totalSpent}
+            remainingBudget={
+              budgetAmount - (budgetData?.expenses || totalSpent)
+            }
+            percentageUsed={
+              ((budgetData?.expenses || totalSpent) / budgetAmount) * 100
+            }
             categoryTotals={categoryTotals}
             formatMonthDisplay={formatMonthDisplay}
             onBudgetChange={setCurrentBudget}

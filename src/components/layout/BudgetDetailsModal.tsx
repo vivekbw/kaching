@@ -40,6 +40,9 @@ export function BudgetDetailsModal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/50" />
         <Dialog.Content className="fixed top-[50%] left-[50%] translate-x-[-50%] translate-y-[-50%] bg-white rounded-lg shadow-lg p-6 w-[90vw] max-w-[800px] max-h-[90vh] overflow-y-auto">
+          <Dialog.Description className="sr-only">
+            Budget details and spending breakdown
+          </Dialog.Description>
           <div className="flex justify-between items-center mb-6">
             <Dialog.Title className="text-xl font-bold">
               Budget Details for {formatMonthDisplay(monthYear)}
