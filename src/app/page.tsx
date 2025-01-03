@@ -19,6 +19,7 @@ import { CreateTransactionModal } from "@/components/modals/transactions/CreateT
 import { Watermark } from "@/components/ui/Watermark";
 import { ChatbotInterface } from "@/components/chat/ChatbotInterface";
 import { BudgetView } from "@/components/budget/BudgetView";
+import { DashboardView } from "@/components/dashboard/DashboardView";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
@@ -29,7 +30,7 @@ const formatCurrency = (amount: number): string => {
 
 export default function Home() {
   const authenticated = useAuthenticated();
-  const [activeTab, setActiveTab] = useState("Line Chart");
+  const [activeTab, setActiveTab] = useState("Dashboard");
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     totalTransactions: 0,
@@ -57,10 +58,10 @@ export default function Home() {
       const totals = transactions.reduce(
         (acc, transaction) => {
           const amount = Number(transaction.amount) || 0;
-          if (amount < 0) {
-            acc.totalExpenses += Math.abs(amount);
+          if (amount > 0) {
+            acc.totalExpenses += amount;
           } else {
-            acc.totalDeposits += amount;
+            acc.totalDeposits += Math.abs(amount);
           }
           return acc;
         },
@@ -87,65 +88,75 @@ export default function Home() {
   if (!authenticated) return null;
 
   const renderTabContent = () => {
-  switch (activeTab) {
-    case "Line Chart":
-      return <TransactionChart transactions={transactions} isLoading={isLoading} />;
-    case "Categories":
-      return <CategoryTreemap transactions={transactions} isLoading={isLoading} />;
-    case "Budget":
-      return <BudgetView transactions={transactions} isLoading={isLoading} />;
-    case "Chatbot":
-      return <ChatbotInterface transactions={transactions} />;
-    default:
-      return null;
-  }
-};
+    switch (activeTab) {
+      case "Dashboard":
+        return (
+          <DashboardView transactions={transactions} isLoading={isLoading} />
+        );
+      case "Line Chart":
+        return (
+          <TransactionChart transactions={transactions} isLoading={isLoading} />
+        );
+      case "Categories":
+        return (
+          <CategoryTreemap transactions={transactions} isLoading={isLoading} />
+        );
+      case "Budget":
+        return <BudgetView transactions={transactions} isLoading={isLoading} />;
+      case "Chatbot":
+        return <ChatbotInterface transactions={transactions} />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <Theme>
-      <Header
-        onSearchClick={() => setIsSearchOpen(true)}
-        onReloadClick={fetchMetrics}
-        onCreateClick={() => setIsCreateOpen(true)}
-      />
-      <main className="pt-20 px-4 max-w-7xl mx-auto">
-        <Watermark />
-        <SearchModal
-          isOpen={isSearchOpen}
-          onClose={() => setIsSearchOpen(false)}
-          transactions={transactions}
+      <div className="min-h-screen pb-12">
+        <Header
+          onSearchClick={() => setIsSearchOpen(true)}
+          onReloadClick={fetchMetrics}
+          onCreateClick={() => setIsCreateOpen(true)}
         />
-        <CreateTransactionModal
-          isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
-          onSuccess={fetchMetrics}
-        />
-        <Flex gap="4" justify="center" style={{ marginTop: "8px" }}>
-          <MetricCard
-            title="Total Transactions"
-            value={metrics.totalTransactions}
-            icon={<BarChartIcon className="w-42 h-42" />}
-            iconColor="blue"
-            isLoading={isLoading}
+        <main className="pt-20 px-4 max-w-7xl mx-auto">
+          <Watermark />
+          <SearchModal
+            isOpen={isSearchOpen}
+            onClose={() => setIsSearchOpen(false)}
+            transactions={transactions}
           />
-          <MetricCard
-            title="Total Expenses"
-            value={formatCurrency(metrics.totalExpenses)}
-            icon={<ArrowDownIcon className="w-42 h-42" />}
-            iconColor="red"
-            isLoading={isLoading}
+          <CreateTransactionModal
+            isOpen={isCreateOpen}
+            onClose={() => setIsCreateOpen(false)}
+            onSuccess={fetchMetrics}
           />
-          <MetricCard
-            title="Total Deposits"
-            value={formatCurrency(metrics.totalDeposits)}
-            icon={<ArrowUpIcon className="w-42 h-42" />}
-            iconColor="green"
-            isLoading={isLoading}
-          />
-        </Flex>
-        <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
-        {renderTabContent()}
-      </main>
+          <Flex gap="4" justify="center" style={{ marginTop: "8px" }}>
+            <MetricCard
+              title="Total Transactions"
+              value={metrics.totalTransactions}
+              icon={<BarChartIcon className="w-42 h-42" />}
+              iconColor="#567CC7"
+              isLoading={isLoading}
+            />
+            <MetricCard
+              title="Total Expenses"
+              value={formatCurrency(metrics.totalExpenses)}
+              icon={<ArrowDownIcon className="w-42 h-42" />}
+              iconColor="red"
+              isLoading={isLoading}
+            />
+            <MetricCard
+              title="Total Deposits"
+              value={formatCurrency(metrics.totalDeposits)}
+              icon={<ArrowUpIcon className="w-42 h-42" />}
+              iconColor="green"
+              isLoading={isLoading}
+            />
+          </Flex>
+          <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+          {renderTabContent()}
+        </main>
+      </div>
     </Theme>
   );
 }

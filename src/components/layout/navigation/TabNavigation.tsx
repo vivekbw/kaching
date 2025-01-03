@@ -1,9 +1,13 @@
 import { HiOutlineSparkles } from "react-icons/hi2";
-import { BarChartIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
+import {
+  BarChartIcon,
+  ChatBubbleIcon,
+} from "@radix-ui/react-icons";
 import { PiChatTeardropTextLight } from "react-icons/pi";
 import { HiOutlineWallet } from "react-icons/hi2";
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
+import { TbLayoutDashboard } from "react-icons/tb";
 
 interface TabNavigationProps {
   activeTab: string;
@@ -13,6 +17,7 @@ interface TabNavigationProps {
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, x: 0 });
   const tabRefs = {
+    Dashboard: useRef<HTMLButtonElement>(null),
     "Line Chart": useRef<HTMLButtonElement>(null),
     Categories: useRef<HTMLButtonElement>(null),
     Budget: useRef<HTMLButtonElement>(null),
@@ -20,7 +25,8 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   };
 
   useEffect(() => {
-    const activeTabElement = tabRefs[activeTab as keyof typeof tabRefs]?.current;
+    const activeTabElement =
+      tabRefs[activeTab as keyof typeof tabRefs]?.current;
     if (activeTabElement) {
       const { offsetWidth, offsetLeft } = activeTabElement;
       setIndicatorStyle({ width: offsetWidth, x: offsetLeft });
@@ -30,6 +36,17 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   return (
     <div className="mb-8 mt-8">
       <div className="flex gap-8 border-b border-gray-200 relative">
+        <button
+          ref={tabRefs["Dashboard"]}
+          onClick={() => onTabChange("Dashboard")}
+          className={`px-4 py-2 flex items-center gap-2 relative ${
+            activeTab === "Dashboard"
+              ? "text-black"
+              : "text-gray-500 hover:text-gray-700"
+          }`}>
+          <TbLayoutDashboard className="w-4 h-4" />
+          Dashboard
+        </button>
         <button
           ref={tabRefs["Line Chart"]}
           onClick={() => onTabChange("Line Chart")}

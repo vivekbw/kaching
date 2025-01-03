@@ -50,6 +50,15 @@ export function TransactionChart({
     (a, b) => new Date(a.rawDate).getTime() - new Date(b.rawDate).getTime()
   );
 
+  const formatAmount = (amount: number) => {
+    if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(0)}k`;
+    } else if (amount <= -1000) {
+      return `-$${(Math.abs(amount) / 1000).toFixed(0)}k`;
+    }
+    return formatCurrency(amount);
+  };
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -89,10 +98,10 @@ export function TransactionChart({
             })}
           </p>
           <p
-            className={`font-bold mb-3 ${
+            className={`font-semibold mb-3 ${
               data.amount > 0 ? "text-red-600" : "text-green-600"
             }`}>
-            Daily Total: {formatCurrency(Math.abs(data.amount))}
+            Total: {formatCurrency(Math.abs(data.amount))}
           </p>
           <div ref={scrollRef} className="max-h-64 overflow-y-auto">
             {data.transactions.map((t: Transaction, i: number) => (
@@ -142,7 +151,7 @@ export function TransactionChart({
           margin={{
             top: 5,
             right: 10,
-            left: 40,
+            left: 10,
             bottom: 5,
           }}>
           <XAxis
@@ -164,8 +173,8 @@ export function TransactionChart({
             padding={{ left: 30 }}
           />
           <YAxis
-            tickFormatter={(value) => formatCurrency(Math.abs(value))}
-            width={80}
+            tickFormatter={formatAmount}
+            width={45}
             axisLine={false}
             tickLine={false}
             style={{
