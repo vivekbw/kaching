@@ -34,7 +34,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   }, [activeTab]);
 
   return (
-    <div className="mb-8 mt-8">
+    <div className="mb-8 mt-6">
       <div className="flex gap-8 border-b border-gray-200 relative">
         <button
           ref={tabRefs["Dashboard"]}

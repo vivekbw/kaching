@@ -91,7 +91,11 @@ export default function Home() {
     switch (activeTab) {
       case "Dashboard":
         return (
-          <DashboardView transactions={transactions} isLoading={isLoading} />
+          <DashboardView
+            transactions={transactions}
+            isLoading={isLoading}
+            onTabChange={setActiveTab}
+          />
         );
       case "Line Chart":
         return (

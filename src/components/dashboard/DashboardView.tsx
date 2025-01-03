@@ -18,15 +18,19 @@ import {
   HiOutlineCreditCard,
   HiOutlineBuildingOffice2,
   HiOutlineChartBar,
+  HiOutlineLightBulb,
 } from "react-icons/hi2";
 
 import { LuUtensils } from "react-icons/lu";
 import "../charts/TransactionChart.css";
 import { DashboardSkeleton } from "./DashboardSkeleton";
+import { FaArrowRight } from "react-icons/fa6";
+import { RiAiGenerate2 } from "react-icons/ri";
 
 interface DashboardViewProps {
   transactions: any[];
   isLoading?: boolean;
+  onTabChange?: (tab: string) => void;
 }
 
 const getCategoryIcon = (category: string) => {
@@ -131,9 +135,36 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
+const TitleWithArrow = ({
+  title,
+  onClick,
+}: {
+  title: string;
+  onClick: () => void;
+}) => (
+  <div
+    onClick={onClick}
+    className="flex items-center gap-2 cursor-pointer hover:text-blue-600 transition-colors mb-4">
+    <h3 className="text-lg font-medium">{title}</h3>
+    <FaArrowRight className="h-[1.125rem] w-[1.125rem]" />
+  </div>
+);
+
+const AIChatPrompt = ({ onClick }: { onClick: () => void }) => (
+  <div
+    onClick={onClick}
+    className="flex items-center gap-2 pb-4 text-gray-600 hover:text-blue-600 cursor-pointer transition-colors">
+    <HiOutlineLightBulb className="w-5 h-5" />
+    <span className="text-sm">
+      Curious about your finances? Ask our AI chatbot
+    </span>
+  </div>
+);
+
 export function DashboardView({
   transactions,
   isLoading = false,
+  onTabChange,
 }: DashboardViewProps) {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -267,21 +298,24 @@ export function DashboardView({
 
   return (
     <div className="px-0">
+      <AIChatPrompt onClick={() => onTabChange?.("Chatbot")} />
       <div className="grid grid-cols-2 gap-4">
         {/* Total Spending Chart */}
-
         <div className="bg-white p-4 rounded-md shadow-sm ring-1 ring-black/5">
-          <h3 className="text-lg font-medium mb-4">Total Spending</h3>
+          <TitleWithArrow
+            title="Total Spending"
+            onClick={() => onTabChange?.("Line Chart")}
+          />
           <div className="h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart
                 data={aggregateData}
                 syncId="total-spending"
                 margin={{
-                  top: 5,
-                  right: 10,
+                  //   top: 5,
+                  right: 5,
                   left: 0,
-                  bottom: 5,
+                  //   bottom: 5,
                 }}>
                 <defs>
                   <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
@@ -334,7 +368,10 @@ export function DashboardView({
         {/* Updated Ongoing Budgets section */}
         {validBudgets.length > 0 && (
           <div className="bg-white p-4 rounded-md shadow-sm ring-1 ring-black/5">
-            <h3 className="text-lg font-medium mb-4">Ongoing Budgets</h3>
+            <TitleWithArrow
+              title="Ongoing Budgets"
+              onClick={() => onTabChange?.("Budget")}
+            />
             <div className="space-y-3">
               {validBudgets.map((budget) => (
                 <SimpleBudgetCard
@@ -349,7 +386,10 @@ export function DashboardView({
 
         {/* Top Categories */}
         <div className="bg-white p-4 rounded-md shadow-sm ring-1 ring-black/5">
-          <h3 className="text-lg font-medium mb-4">Spending by Category</h3>
+          <TitleWithArrow
+            title="Spending by Category"
+            onClick={() => onTabChange?.("Categories")}
+          />
           <div className="flex flex-col justify-between h-[200px]">
             {categoryTotals.map(([category, amount], index) => (
               <div key={category} className="flex items-center justify-between">
