@@ -16,10 +16,17 @@ interface ChatbotInterfaceProps {
 
 const STORED_PROMPTS_KEY = "chatbot_stored_prompts";
 const MAX_STORED_PROMPTS = 5;
+const STORED_MESSAGES_KEY = "chatbot_stored_messages";
 
 export function ChatbotInterface({ transactions }: ChatbotInterfaceProps) {
   const authenticated = useAuthenticated();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(STORED_MESSAGES_KEY);
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -37,6 +44,12 @@ export function ChatbotInterface({ transactions }: ChatbotInterfaceProps) {
 
   useEffect(() => {
     scrollToBottom();
+  }, [messages]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem(STORED_MESSAGES_KEY, JSON.stringify(messages));
+    }
   }, [messages]);
 
   const storePrompt = (prompt: string) => {
