@@ -51,12 +51,15 @@ export function CreateBudgetModal({
 
   const handleMonthSelect = (month: string) => {
     const monthIndex = months.indexOf(month) + 1;
-    onMonthChange(`${selectedYear}-${String(monthIndex).padStart(2, "0")}`);
+    const monthYear = `${selectedYear}-${String(monthIndex).padStart(2, "0")}`;
+    onMonthChange(monthYear);
   };
 
   const formatMonthDisplay = (monthYear: string) => {
+    if (!monthYear) return "";
     const [year, month] = monthYear.split("-");
-    return new Date(`${year}-${month}-01`).toLocaleDateString("en-US", {
+    const date = new Date(Number(year), Number(month) - 1);
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
     });

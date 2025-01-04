@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { getClient } from "@/lib/client";
 import { transactionsChatbot } from "@kaching/sdk";
+import { Transaction } from "@kaching/sdk";
 import useAuthenticated from "@/lib/useAuthenticated";
 import { motion, AnimatePresence } from "framer-motion";
 

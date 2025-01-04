@@ -180,21 +180,14 @@ export function BudgetView({
   const handleSaveBudget = async () => {
     const client = getClient();
     try {
-      // Convert YYYY-MM to Month-YYYY format
-      const [year, month] = selectedMonth.split("-");
-      const date = new Date(`${year}-${month}-01`);
-      const formattedMonth = date.toLocaleString("en-US", { month: "long" });
-      const primaryKey = `${formattedMonth}-${year}`;
-
-      console.log("UPDATING the BUDGET FOR: ", primaryKey);
-
       const result = await client(createOrModifyBudget).applyAction(
         {
           Budget: {
-            $primaryKey: primaryKey,
+            $primaryKey: selectedMonth,
             $apiName: "Budget",
             $objectType: "Budget",
-            $title: primaryKey,
+            $title: selectedMonth,
+            monthYear: selectedMonth,
           },
           current_budget: currentBudget,
         },
@@ -213,24 +206,15 @@ export function BudgetView({
         allBudgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
       );
 
-      // Refresh current budget data
-      const budgets = [];
-      for await (const budget of client($Objects.Budget)
-        .where({ monthYear: selectedMonth })
-        .asyncIter()) {
-        budgets.push(budget);
-      }
-      if (budgets.length > 0) {
-        setBudgetData(budgets[0]);
-        toast.success(
-          `Budget for ${formatMonthDisplay(
-            selectedMonth
-          )} updated to ${formatCurrency(Number(currentBudget))}`
-        );
-      }
+      // Show success message
+      toast.success(
+        `Budget for ${formatMonthDisplay(
+          selectedMonth
+        )} updated to ${formatCurrency(Number(currentBudget))}`
+      );
     } catch (error) {
       console.error("Error saving budget:", error);
-      toast.error("Failed to update budget. Please try again.");
+      toast.error("Failed to save budget");
     }
   };
 
