@@ -20,6 +20,7 @@ import { Watermark } from "@/components/ui/Watermark";
 import { ChatbotInterface } from "@/components/chat/ChatbotInterface";
 import { BudgetView } from "@/components/budget/BudgetView";
 import { DashboardView } from "@/components/dashboard/DashboardView";
+import { AccountsView } from "@/components/accounts/AccountsView";
 
 const formatCurrency = (amount: number): string => {
   return new Intl.NumberFormat("en-US", {
@@ -109,6 +110,10 @@ export default function Home() {
         return <BudgetView transactions={transactions} isLoading={isLoading} />;
       case "Chatbot":
         return <ChatbotInterface transactions={transactions} />;
+      case "Accounts":
+        return (
+          <AccountsView transactions={transactions} isLoading={isLoading} />
+        );
       default:
         return null;
     }

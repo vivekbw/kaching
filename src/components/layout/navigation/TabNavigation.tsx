@@ -8,6 +8,7 @@ import { HiOutlineWallet } from "react-icons/hi2";
 import { motion } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { TbLayoutDashboard } from "react-icons/tb";
+import { HiOutlineBuildingLibrary } from "react-icons/hi2";
 
 interface TabNavigationProps {
   activeTab: string;
@@ -18,6 +19,7 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, x: 0 });
   const tabRefs = {
     Dashboard: useRef<HTMLButtonElement>(null),
+    Accounts: useRef<HTMLButtonElement>(null),
     "Line Chart": useRef<HTMLButtonElement>(null),
     Categories: useRef<HTMLButtonElement>(null),
     Budget: useRef<HTMLButtonElement>(null),
@@ -46,6 +48,17 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}>
           <TbLayoutDashboard className="w-4 h-4" />
           Dashboard
+        </button>
+        <button
+          ref={tabRefs["Accounts"]}
+          onClick={() => onTabChange("Accounts")}
+          className={`px-4 py-2 flex items-center gap-2 relative ${
+            activeTab === "Accounts"
+              ? "text-black"
+              : "text-gray-500 hover:text-gray-700"
+          }`}>
+          <HiOutlineBuildingLibrary className="w-4 h-4" />
+          Accounts
         </button>
         <button
           ref={tabRefs["Line Chart"]}
