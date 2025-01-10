@@ -50,17 +50,6 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           Dashboard
         </button>
         <button
-          ref={tabRefs["Accounts"]}
-          onClick={() => onTabChange("Accounts")}
-          className={`px-4 py-2 flex items-center gap-2 relative ${
-            activeTab === "Accounts"
-              ? "text-black"
-              : "text-gray-500 hover:text-gray-700"
-          }`}>
-          <HiOutlineBuildingLibrary className="w-4 h-4" />
-          Accounts
-        </button>
-        <button
           ref={tabRefs["Line Chart"]}
           onClick={() => onTabChange("Line Chart")}
           className={`px-4 py-2 flex items-center gap-2 relative ${
@@ -70,6 +59,17 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
           }`}>
           <BarChartIcon />
           Overview
+        </button>
+        <button
+          ref={tabRefs["Accounts"]}
+          onClick={() => onTabChange("Accounts")}
+          className={`px-4 py-2 flex items-center gap-2 relative ${
+            activeTab === "Accounts"
+              ? "text-black"
+              : "text-gray-500 hover:text-gray-700"
+          }`}>
+          <HiOutlineBuildingLibrary className="w-4 h-4" />
+          Accounts
         </button>
         <button
           ref={tabRefs["Budget"]}
