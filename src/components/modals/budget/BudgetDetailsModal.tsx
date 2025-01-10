@@ -17,6 +17,7 @@ interface BudgetDetailsModalProps {
   onBudgetChange: (budget: string) => void;
   onSave: () => void;
   currentBudget: string;
+  onDelete: () => void;
 }
 
 export function BudgetDetailsModal({
@@ -32,8 +33,10 @@ export function BudgetDetailsModal({
   onBudgetChange,
   onSave,
   currentBudget,
+  onDelete,
 }: BudgetDetailsModalProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={onClose}>
@@ -48,12 +51,34 @@ export function BudgetDetailsModal({
               Budget Details for {formatMonthDisplay(monthYear)}
             </Dialog.Title>
             <div className="flex items-center gap-2">
-              {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
-                  Edit Budget
-                </button>
+              {!isEditing && !showDeleteConfirm && (
+                <>
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                    Edit Budget
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100">
+                    Delete
+                  </button>
+                </>
+              )}
+              {showDeleteConfirm && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Are you sure?</span>
+                  <button
+                    onClick={onDelete}
+                    className="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Yes, Delete
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-3 py-1.5 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200">
+                    Cancel
+                  </button>
+                </div>
               )}
               <Dialog.Close className="rounded-full p-1.5 hover:bg-gray-100">
                 <Cross2Icon />

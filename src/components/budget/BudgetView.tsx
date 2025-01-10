@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { getClient } from "@/lib/client";
-import { $Objects, createOrModifyBudget } from "@kaching/sdk";
+import { $Objects, createOrModifyBudget, deleteBudget } from "@kaching/sdk";
 import toast from "react-hot-toast";
 import { ChevronRightIcon } from "@radix-ui/react-icons";
 import { BudgetDetailsModal } from "../modals/budget/BudgetDetailsModal";
@@ -218,6 +218,47 @@ export function BudgetView({
     }
   };
 
+  const handleDeleteBudget = async () => {
+    const client = getClient();
+    try {
+      await client(createOrModifyBudget).applyAction(
+        {
+          Budget: {
+            $primaryKey: selectedMonth,
+            $apiName: "Budget",
+            $objectType: "Budget",
+            $title: selectedMonth,
+            monthYear: selectedMonth,
+          },
+          current_budget: null,
+        },
+        {
+          $returnEdits: true,
+        }
+      );
+
+      // Refresh budgets list
+      const allBudgets = [];
+      for await (const budget of client($Objects.Budget).asyncIter()) {
+        allBudgets.push(budget);
+      }
+      setExistingBudgets(
+        allBudgets.sort((a, b) => b.monthYear.localeCompare(a.monthYear))
+      );
+
+      // Reset states and close modal
+      setIsModalOpen(false);
+      setSelectedMonth("");
+      setBudgetData(null);
+      setCurrentBudget("");
+
+      toast.success(`Budget for ${formatMonthDisplay(selectedMonth)} removed`);
+    } catch (error) {
+      console.error("Error removing budget:", error);
+      toast.error("Failed to remove budget");
+    }
+  };
+
   return (
     <div className="w-full mb-24">
       <div className="mb-8">
@@ -343,6 +384,7 @@ export function BudgetView({
             onBudgetChange={setCurrentBudget}
             onSave={handleSaveBudget}
             currentBudget={currentBudget}
+            onDelete={handleDeleteBudget}
           />
         )}
 
