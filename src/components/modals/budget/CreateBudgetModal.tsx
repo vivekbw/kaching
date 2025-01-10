@@ -50,28 +50,25 @@ export function CreateBudgetModal({
   const years = Array.from({ length: 5 }, (_, i) => selectedYear - 2 + i);
 
   const handleMonthSelect = (month: string) => {
-    const monthIndex = months.indexOf(month) + 1;
-    const monthYear = `${selectedYear}-${String(monthIndex).padStart(2, "0")}`;
+    const monthIndex = months.indexOf(month);
+    const date = new Date(selectedYear, monthIndex);
+    const monthYear = `${months[date.getMonth()]}-${date.getFullYear()}`;
     onMonthChange(monthYear);
   };
 
   const formatMonthDisplay = (monthYear: string) => {
     if (!monthYear) return "";
-    const [year, month] = monthYear.split("-");
-    const date = new Date(Number(year), Number(month) - 1);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-    });
+    const [month, year] = monthYear.split("-");
+    return `${month} ${year}`;
   };
 
   const calculateMonthlyExpenses = () => {
     return transactions
       .filter((t) => {
         const transactionDate = new Date(t.date);
-        const transactionMonth = `${transactionDate.getFullYear()}-${String(
-          transactionDate.getMonth() + 1
-        ).padStart(2, "0")}`;
+        const transactionMonth = `${
+          months[transactionDate.getMonth()]
+        }-${transactionDate.getFullYear()}`;
         return transactionMonth === selectedMonth && Number(t.amount) > 0;
       })
       .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -145,10 +142,7 @@ export function CreateBudgetModal({
                         key={month}
                         onClick={() => handleMonthSelect(month)}
                         className={`p-2 text-sm rounded-lg transition-colors ${
-                          selectedMonth ===
-                          `${selectedYear}-${String(
-                            months.indexOf(month) + 1
-                          ).padStart(2, "0")}`
+                          selectedMonth === `${month}-${selectedYear}`
                             ? "bg-black text-white"
                             : "hover:bg-gray-100"
                         }`}>
